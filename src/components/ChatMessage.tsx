@@ -46,9 +46,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
               {message.content}
             </p>
           ) : (
-            <ReactMarkdown 
-              className="text-zinc-200 md:text-zinc-800 leading-relaxed text-sm md:text-base"
-              components={{
+            <div className="text-zinc-200 md:text-zinc-800 leading-relaxed text-sm md:text-base">
+              <ReactMarkdown 
+                components={{
                 code: ({ node, inline, className, children, ...props }) => {
                   if (inline) {
                     return (
