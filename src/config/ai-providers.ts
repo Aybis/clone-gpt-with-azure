@@ -144,8 +144,8 @@ export const getAvailableModels = (provider: AIProvider): AIModel[] => {
     case 'gemini':
       return [
         {
-          id: 'gemini-1.5-pro',
-          name: 'Gemini 1.5 Pro',
+          id: 'gemini-2.0-flash',
+          name: 'Gemini 2.0 Flash',
           description: 'Most capable Gemini model with long context',
           provider: 'gemini',
           maxTokens: 2097152,
