@@ -45,8 +45,10 @@ export const useAI = () => {
 
   // Test connection to AI service
   const testConnection = useCallback(async (): Promise<boolean> => {
+    // Always allow testing, even in mock mode
     if (shouldUseMock) {
       setIsConnected(true);
+      setError(null);
       return true;
     }
 
@@ -57,10 +59,13 @@ export const useAI = () => {
     }
 
     try {
+      setError(null); // Clear any previous errors
       const connected = await service.healthCheck();
       setIsConnected(connected);
       if (!connected) {
         setError('Failed to connect to AI service');
+      } else {
+        setError(null); // Clear error on successful connection
       }
       return connected;
     } catch (err) {

@@ -58,14 +58,14 @@ const ProviderStatus: React.FC = () => {
     }
 
     if (isMockMode) {
-      return 'Mock Mode (Development)';
+      return `Mock Mode - ${providerInfo.name}`;
     }
 
     if (isConnected) {
       return `Connected to ${providerInfo.name}`;
     }
 
-    return 'Not connected';
+    return `${providerInfo.name} - Not connected`;
   };
 
   const getStatusColor = () => {
@@ -102,15 +102,13 @@ const ProviderStatus: React.FC = () => {
             <Settings size={14} />
           </button>
           
-          {!isMockMode && (
-            <button
-              onClick={handleTestConnection}
-              disabled={isTestingConnection}
-              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Test
-            </button>
-          )}
+          <button
+            onClick={handleTestConnection}
+            disabled={isTestingConnection}
+            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Test
+          </button>
         </div>
       </div>
 
