@@ -26,7 +26,7 @@ function App() {
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Initialize with sample chats
   useEffect(() => {
@@ -280,19 +280,18 @@ I understand you're asking about **${input}**. This is an interesting topic!
 
   return (
     <div className="flex h-screen bg-zinc-800 md:bg-zinc-100">
-      {isSidebarVisible && (
-        <Sidebar
-          chats={chats}
-          activeChat={activeChat}
-          onChatSelect={handleChatSelect}
-          onNewChat={handleNewChat}
-          onDeleteChat={handleDeleteChat}
-          onRenameChat={handleRenameChat}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
-        />
-      )}
+      <Sidebar
+        chats={chats}
+        activeChat={activeChat}
+        onChatSelect={handleChatSelect}
+        onNewChat={handleNewChat}
+        onDeleteChat={handleDeleteChat}
+        onRenameChat={handleRenameChat}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
       
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
@@ -300,9 +299,9 @@ I understand you're asking about **${input}**. This is an interesting topic!
           <div className="max-w-4xl mx-auto flex items-center justify-between lg:justify-center">
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-2">
-              {!isSidebarVisible && (
+              {isSidebarCollapsed && (
                 <button
-                  onClick={() => setIsSidebarVisible(true)}
+                  onClick={() => setIsSidebarCollapsed(false)}
                   className="hidden lg:block p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
                 >
                   <Menu size={20} />

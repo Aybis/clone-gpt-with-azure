@@ -27,7 +27,8 @@ interface SidebarProps {
   onRenameChat: (chatId: string, newTitle: string) => void;
   isOpen: boolean;
   onClose: () => void;
-  onToggleVisibility: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -39,7 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onRenameChat,
   isOpen,
   onClose,
-  onToggleVisibility
+  isCollapsed,
+  onToggleCollapse
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingChat, setEditingChat] = useState<string | null>(null);
@@ -192,14 +194,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Header */}
       <div className="p-3 border-b border-zinc-700">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-white font-medium">ChatGPT</span>
           <button
-            onClick={onToggleVisibility}
+            onClick={onToggleCollapse}
             className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
-          <span className="text-white font-medium">ChatGPT</span>
         </div>
         <button
           onClick={onNewChat}
@@ -313,10 +315,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:relative inset-y-0 left-0 z-50 lg:z-0
-        w-80 h-screen flex flex-col shadow-sm
-        transform transition-transform duration-300 ease-in-out
+        fixed lg:relative inset-y-0 left-0 z-50 lg:z-0 h-screen flex flex-col shadow-sm
+        transition-all duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isCollapsed ? 'lg:w-0 lg:opacity-0' : 'lg:w-80 lg:opacity-100'}
+        w-80
         ${isOpen ? 'bg-zinc-100 border-r border-zinc-300' : 'lg:bg-zinc-800 lg:border-r lg:border-zinc-700 bg-zinc-100 border-r border-zinc-300'}
       `}>
         {/* Mobile Close Button */}
@@ -327,10 +330,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <X size={20} />
         </button>
 
-        <div className="lg:hidden">
+        <div className={`lg:hidden ${isCollapsed ? 'lg:hidden' : ''}`}>
           <MobileSidebarContent />
         </div>
-        <div className="hidden lg:block">
+        <div className={`hidden lg:flex lg:flex-col lg:h-full ${isCollapsed ? 'lg:hidden' : ''}`}>
           <DesktopSidebarContent />
         </div>
       </div>
