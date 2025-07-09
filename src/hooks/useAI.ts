@@ -254,7 +254,7 @@ export const useAI = () => {
     isMockMode: shouldUseMock,
     currentProvider,
     providerInfo: getProviderInfo(currentProvider),
-    clearError: () => setError(null)
+    clearError: () => setError(null),
     changeProvider: (provider: AIProvider) => {
       setSelectedProvider(provider);
       setIsConnected(null);
