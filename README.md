@@ -54,6 +54,25 @@ VITE_AZURE_OPENAI_API_VERSION=2024-02-15-preview
 
 ## 🔧 Environment Setup
 
+### Supabase Database Setup
+
+This application uses Supabase for data storage. You'll need to set up a Supabase project:
+
+1. **Create a Supabase Project**
+   - Go to [Supabase](https://supabase.com)
+   - Create a new project
+   - Note your project URL and anon key from Settings > API
+
+2. **Configure Environment Variables**
+   
+   Add these to your `.env` file:
+   
+   ```env
+   # Supabase Configuration
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
 ### Development Mode (Default)
 No configuration needed! The app automatically uses mock responses when Azure OpenAI isn't configured.
 
