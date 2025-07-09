@@ -286,9 +286,9 @@ I understand you're asking about **${input}**. This is an interesting topic!
         onRenameChat={handleRenameChat}
       />
       
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
-        <div className="bg-gray-800 border-b border-gray-700 p-3">
+        <div className="bg-gray-800 border-b border-gray-700 p-3 flex-shrink-0">
           <div className="max-w-4xl mx-auto flex items-center justify-center">
             <ModelSelector 
               selectedModel={selectedModel} 
@@ -297,16 +297,20 @@ I understand you're asking about **${input}**. This is an interesting topic!
           </div>
         </div>
         
-        <ChatArea
-          messages={currentChat?.messages || []}
-          isLoading={isLoading}
-        />
+        <div className="flex-1 min-h-0">
+          <ChatArea
+            messages={currentChat?.messages || []}
+            isLoading={isLoading}
+          />
+        </div>
         
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          onStopGeneration={handleStopGeneration}
-        />
+        <div className="flex-shrink-0">
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            onStopGeneration={handleStopGeneration}
+          />
+        </div>
       </div>
     </div>
   );

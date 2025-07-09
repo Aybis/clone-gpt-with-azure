@@ -26,7 +26,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 bg-white">
+      <div className="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-white">
         <div className="text-center max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
             Hey, Ama. Ready to dive in?
@@ -63,7 +63,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white">
+    <div className="h-full overflow-y-auto bg-white">
       <div className="max-w-4xl mx-auto">
         {messages.map((message) => (
           <ChatMessage
