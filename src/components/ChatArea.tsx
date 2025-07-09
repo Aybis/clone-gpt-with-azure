@@ -13,9 +13,10 @@ interface ChatAreaProps {
   isLoading: boolean;
   chatId?: string;
   streamingMessage?: string;
+  user?: any;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId, streamingMessage }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId, streamingMessage, user }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,13 +27,30 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId, stream
     navigator.clipboard.writeText(content);
   };
 
+  // Extract user's first name from email or use "there" as fallback
+  const getUserName = () => {
+    if (!user?.email) return 'there';
+    
+    // Try to extract name from email (before @)
+    const emailPrefix = user.email.split('@')[0];
+    
+    // Capitalize first letter and clean up common separators
+    const cleanName = emailPrefix
+      .replace(/[._-]/g, ' ')
+      .split(' ')
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    return cleanName || 'there';
+  };
+
   if (messages.length === 0) {
     return (
       <div className="h-full flex items-center justify-center p-4 md:p-12 bg-zinc-800 md:bg-zinc-100">
         <div className="text-center max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-normal mb-6 md:mb-8 leading-tight">
             <span className="text-white md:text-zinc-800">
-              Hey, Ama. Ready to dive in?
+              Hey, {getUserName()}. Ready to dive in?
             </span>
           </h1>
           <p className="text-base md:text-lg text-zinc-400 md:text-zinc-600 mb-12 md:mb-16 leading-relaxed">

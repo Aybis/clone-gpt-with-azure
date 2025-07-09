@@ -351,6 +351,7 @@ function App() {
             messages={currentChat?.messages || []}
             isLoading={isLoading}
             streamingMessage={streamingMessage}
+            user={user}
           />
         </div>
         
