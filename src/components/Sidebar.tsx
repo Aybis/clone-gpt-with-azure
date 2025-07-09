@@ -328,12 +328,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-700">
+      <div className="p-3 border-t border-gray-700 flex-shrink-0">
         <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
-          <Eye size={18} />
-          <span>View plans</span>
-          <div className="ml-auto text-xs text-gray-400">
-            Unlimited access, team features, and
+          <div className="flex items-center gap-3 flex-1">
+            <Eye size={18} />
+            <span>View plans</span>
+          </div>
+        </button>
+        <div className="text-xs text-gray-400 mt-2 px-3">
+          Unlimited access, team features, and more
+        </div>
+      </div>
           </div>
         </button>
       </div>
