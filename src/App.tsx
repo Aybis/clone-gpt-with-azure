@@ -77,8 +77,15 @@ function App() {
 
   // Show auth modal if not authenticated and trying to use the app
   useEffect(() => {
-    if (!isAuthenticated && !showAuthModal) {
+    if (!isAuthenticated && !showAuthModal && chats.length === 0) {
       setShowAuthModal(true);
+    }
+  }, [isAuthenticated, showAuthModal]);
+
+  // Hide auth modal when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated && showAuthModal) {
+      setShowAuthModal(false);
     }
   }, [isAuthenticated, showAuthModal]);
 
