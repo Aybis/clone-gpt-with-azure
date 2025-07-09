@@ -276,7 +276,7 @@ I understand you're asking about **${input}**. This is an interesting topic!
   const currentChat = getCurrentChat();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-white">
       <Sidebar
         chats={chats}
         activeChat={activeChat}
@@ -288,7 +288,7 @@ I understand you're asking about **${input}**. This is an interesting topic!
       
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* Header with Model Selector */}
-        <div className="bg-gray-900 border-b border-gray-700 p-2 md:p-3">
+        <div className="bg-gray-800 border-b border-gray-700 p-3">
           <div className="max-w-4xl mx-auto flex items-center justify-center">
             <ModelSelector 
               selectedModel={selectedModel} 

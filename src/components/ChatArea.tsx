@@ -26,31 +26,35 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 bg-gray-50">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 bg-white">
+        <div className="text-center max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
             Hey, Ama. Ready to dive in?
           </h1>
-          <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
+          <p className="text-base md:text-lg text-gray-600 mb-12 leading-relaxed">
             I'm here to help with questions, creative projects, and more.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-2xl">
-            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-              <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-sm md:text-base">💡 Creative writing</h3>
-              <p className="text-xs md:text-sm text-gray-600">Help me write a story about...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            <div className="group bg-white border border-gray-200 p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+              <div className="text-2xl mb-3">💡</div>
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">Creative writing</h3>
+              <p className="text-gray-600">Help me write a story about...</p>
             </div>
-            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-              <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-sm md:text-base">🔍 Research</h3>
-              <p className="text-xs md:text-sm text-gray-600">Find information about...</p>
+            <div className="group bg-white border border-gray-200 p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+              <div className="text-2xl mb-3">🔍</div>
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">Research</h3>
+              <p className="text-gray-600">Find information about...</p>
             </div>
-            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-              <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-sm md:text-base">💻 Code help</h3>
-              <p className="text-xs md:text-sm text-gray-600">Debug this code...</p>
+            <div className="group bg-white border border-gray-200 p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+              <div className="text-2xl mb-3">💻</div>
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">Code help</h3>
+              <p className="text-gray-600">Debug this code...</p>
             </div>
-            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-              <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-sm md:text-base">📚 Learning</h3>
-              <p className="text-xs md:text-sm text-gray-600">Explain this concept...</p>
+            <div className="group bg-white border border-gray-200 p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+              <div className="text-2xl mb-3">📚</div>
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">Learning</h3>
+              <p className="text-gray-600">Explain this concept...</p>
             </div>
           </div>
         </div>
@@ -70,15 +74,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
         ))}
         
         {isLoading && (
-          <div className="flex gap-3 md:gap-4 p-4 md:p-6 bg-gray-50">
+          <div className="flex gap-4 md:gap-6 p-6 md:p-8 border-b border-gray-100">
             <div className="flex-shrink-0">
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+                <div className="w-4 h-4 text-white font-bold text-xs">G</div>
               </div>
             </div>
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium text-sm md:text-base text-gray-900">ChatGPT</span>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="font-semibold text-gray-900">ChatGPT</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
