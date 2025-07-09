@@ -152,6 +152,10 @@ function App() {
   const handleRenameChat = async (chatId: string, newTitle: string) => {
     if (!isAuthenticated) return;
 
+    if (!newTitle.trim()) {
+      console.error('Cannot rename chat to empty title');
+      return;
+    }
     try {
       await updateChat(chatId, { title: newTitle });
       setChats(prev => prev.map(chat => 
@@ -159,6 +163,10 @@ function App() {
       ));
     } catch (error) {
       console.error('Failed to rename chat:', error);
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        console.error('Rename error details:', error.message);
+      }
     }
   };
 

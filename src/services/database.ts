@@ -145,16 +145,28 @@ export class ChatService {
       throw new Error('Supabase client not initialized. Please check your environment variables.');
     }
 
+    // Ensure we have valid updates
+    const validUpdates: any = {};
+    if (updates.title !== undefined) validUpdates.title = updates.title;
+    if (updates.preview !== undefined) validUpdates.preview = updates.preview;
+    
+    if (Object.keys(validUpdates).length === 0) {
+      throw new Error('No valid updates provided');
+    }
     const { data, error } = await supabase
       .from('chats')
-      .update(updates)
+      .update(validUpdates)
       .eq('id', chatId)
       .select()
       .single();
 
     if (error) {
       console.error('Error updating chat:', error);
-      throw new Error('Failed to update chat');
+      throw new Error(`Failed to update chat: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('No data returned from update operation');
     }
 
     return data;
