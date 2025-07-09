@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { createAIService, BaseAIService } from '../services/ai-service';
+import { createAIService, BaseAIServices } from '../services/ai-service';
 import { getAIConfig, getCurrentProvider, isProviderConfigured, getProviderInfo } from '../config/ai-providers';
 import { ChatMessage, StreamChunk } from '../types/ai-providers';
 import { mockAzureAPI } from '../utils/mockAzureAPI';
@@ -13,7 +13,7 @@ export const useAI = () => {
   const isConfigured = isProviderConfigured();
   const shouldUseMock = !isConfigured;
   
-  const service = useMemo((): BaseAIService | null => {
+  const service = useMemo((): BaseAIServices | null => {
     if (shouldUseMock) return null;
     
     const config = getAIConfig();
