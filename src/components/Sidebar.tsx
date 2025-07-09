@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteChat,
   onRenameChat,
   isOpen,
-  onClose
+  onClose,
   onToggleVisibility
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
