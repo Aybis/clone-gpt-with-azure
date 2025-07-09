@@ -296,9 +296,9 @@ I understand you're asking about **${input}**. This is an interesting topic!
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
         <div className="bg-zinc-800 border-b border-zinc-700 p-3 flex-shrink-0">
-          <div className="max-w-4xl mx-auto flex items-center justify-between lg:justify-center">
+          <div className={`max-w-4xl mx-auto flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between lg:justify-center'}`}>
             {/* Mobile Menu Button */}
-            <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'absolute left-4' : ''}`}>
               {isSidebarCollapsed && (
                 <button
                   onClick={() => setIsSidebarCollapsed(false)}
@@ -322,7 +322,7 @@ I understand you're asking about **${input}**. This is an interesting topic!
             />
             
             {/* Spacer for mobile to center the model selector */}
-            <div className="lg:hidden w-10"></div>
+            <div className={`lg:hidden w-10 ${isSidebarCollapsed ? 'hidden' : ''}`}></div>
           </div>
         </div>
         
