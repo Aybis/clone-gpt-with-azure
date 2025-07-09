@@ -278,7 +278,7 @@ I understand you're asking about **${input}**. This is an interesting topic!
   const currentChat = getCurrentChat();
 
   return (
-    <div className="flex h-screen bg-gray-900 md:bg-gray-50">
+    <div className="flex h-screen bg-gray-900 md:bg-white">
       <Sidebar
         chats={chats}
         activeChat={activeChat}

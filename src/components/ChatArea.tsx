@@ -26,7 +26,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-gray-50">
+      <div className="h-full flex items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-white">
         <div className="text-center max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-normal mb-6 md:mb-8 leading-tight">
             <span className="text-white md:text-gray-800">
@@ -65,7 +65,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-900 md:bg-gray-50">
+    <div className="h-full overflow-y-auto bg-gray-900 md:bg-white">
       <div className="max-w-4xl mx-auto">
         {messages.map((message) => (
           <ChatMessage

@@ -49,7 +49,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-gray-800 md:border-gray-200 bg-gray-900 md:bg-gray-50 p-4 md:p-6 flex-shrink-0">
+    <div className="border-t border-gray-800 md:border-gray-200 bg-gray-900 md:bg-white p-4 md:p-6 flex-shrink-0">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex items-end gap-2 md:gap-3 bg-gray-800 md:bg-white border border-gray-700 md:border-gray-300 rounded-3xl p-3 md:p-4 shadow-sm focus-within:border-gray-500 md:focus-within:border-gray-400 focus-within:shadow-md transition-all">

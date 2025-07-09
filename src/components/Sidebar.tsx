@@ -8,7 +8,16 @@ import {
   Menu,
   X,
   User,
-  Settings
+  Settings,
+  Library,
+  Code,
+  Sparkles,
+  Zap,
+  FolderOpen,
+  Database,
+  BookOpen,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 
 interface Chat {
@@ -76,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return date.toLocaleDateString();
   };
 
-  const SidebarContent = () => (
+  const MobileSidebarContent = () => (
     <>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
@@ -184,6 +193,153 @@ const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 
+  const DesktopSidebarContent = () => (
+    <>
+      {/* Header */}
+      <div className="p-3 border-b border-gray-700">
+        <button
+          onClick={onNewChat}
+          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white"
+        >
+          <Edit3 size={18} />
+          <span className="font-medium">New chat</span>
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="p-3 border-b border-gray-700">
+        <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+          <Search size={18} />
+          <span>Search chats</span>
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <div className="p-3 border-b border-gray-700">
+        <nav className="space-y-1">
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Library size={18} />
+            <span>Library</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Code size={18} />
+            <span>Codex</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Sparkles size={18} />
+            <span>Sora</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Zap size={18} />
+            <span>GPTs</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <User size={18} />
+            <span>Sammy Toyota Sales Assist...</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+            <span>Whimsical Diagrams</span>
+          </button>
+        </nav>
+      </div>
+
+      {/* Projects */}
+      <div className="p-3 border-b border-gray-700">
+        <nav className="space-y-1">
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <FolderOpen size={18} />
+            <span>New project</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Smartphone size={18} />
+            <span>iOS Dev</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Database size={18} />
+            <span>Datasets</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <BookOpen size={18} />
+            <span>Story Book</span>
+          </button>
+          <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+            <Sparkles size={18} />
+            <span>Maya-AI</span>
+          </button>
+        </nav>
+      </div>
+
+      {/* Chat History */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-3">
+          <h3 className="text-sm font-medium text-gray-400 mb-3">Chats</h3>
+          <div className="space-y-1">
+            {filteredChats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer ${
+                  activeChat === chat.id ? 'bg-gray-800' : ''
+                }`}
+                onClick={() => onChatSelect(chat.id)}
+              >
+                <div className="flex-1 min-w-0">
+                  {editingChat === chat.id ? (
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveRename(chat.id);
+                        if (e.key === 'Escape') cancelRename();
+                      }}
+                      onBlur={() => saveRename(chat.id)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="text-sm text-white truncate">{chat.title}</div>
+                  )}
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRename(chat.id, chat.title);
+                    }}
+                    className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteChat(chat.id);
+                    }}
+                    className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-gray-700">
+        <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors text-white">
+          <Eye size={18} />
+          <span>View plans</span>
+          <div className="ml-auto text-xs text-gray-400">
+            Unlimited access, team features, and
+          </div>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -197,9 +353,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar */}
       <div className={`
         fixed lg:relative inset-y-0 left-0 z-50 lg:z-0
-        w-80 bg-white h-screen flex flex-col border-r border-gray-200 shadow-sm
+        w-80 h-screen flex flex-col shadow-sm
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'bg-white border-r border-gray-200' : 'lg:bg-gray-900 lg:border-r lg:border-gray-700 bg-white border-r border-gray-200'}
       `}>
         {/* Mobile Close Button */}
         <button
@@ -209,7 +366,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           <X size={20} />
         </button>
 
-        <SidebarContent />
+        <div className="lg:hidden">
+          <MobileSidebarContent />
+        </div>
+        <div className="hidden lg:block">
+          <DesktopSidebarContent />
+        </div>
       </div>
     </>
   );
