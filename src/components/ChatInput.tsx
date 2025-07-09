@@ -78,7 +78,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 type="button"
                 onClick={toggleRecording}
                 className={`p-2 rounded-xl transition-colors ${
-                  p-1.5 md:p-2 rounded-xl transition-colors ${
+                  isRecording
                     ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
