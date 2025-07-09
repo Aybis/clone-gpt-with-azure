@@ -31,11 +31,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const { sendMessage, currentProvider } = useAI();
   const { 
     user, 
     isAuthenticated, 
+    subscription,
     loadChats, 
     loadChatWithMessages,
     createChat, 
@@ -45,6 +48,7 @@ function App() {
     signIn, 
     signUp, 
     signOut,
+    upgradeToPlusSubscription,
     isLoading: dbLoading,
     error: dbError,
     clearError
@@ -87,12 +91,22 @@ function App() {
       return;
     }
 
+    // Check chat limit for free users
+    if (subscription?.plan === 'free' && subscription.current_count >= subscription.chat_limit) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     try {
       const newChat = await createChat('New Chat');
       setChats(prev => [newChat, ...prev]);
       setActiveChat(newChat.id);
     } catch (error) {
-      console.error('Failed to create chat:', error);
+      if (error instanceof Error && error.message === 'CHAT_LIMIT_EXCEEDED') {
+        setShowUpgradeModal(true);
+      } else {
+        console.error('Failed to create chat:', error);
+      }
     }
   };
 
@@ -160,6 +174,12 @@ function App() {
     
     // Create new chat if none is active
     if (!chatId) {
+      // Check chat limit for free users
+      if (subscription?.plan === 'free' && subscription.current_count >= subscription.chat_limit) {
+        setShowUpgradeModal(true);
+        return;
+      }
+      
       try {
         const title = content.length > 50 ? content.substring(0, 50) + '...' : content;
         const preview = content.length > 100 ? content.substring(0, 100) + '...' : content;
@@ -169,7 +189,11 @@ function App() {
         chatId = newChat.id;
         setActiveChat(chatId);
       } catch (error) {
-        console.error('Failed to create chat:', error);
+        if (error instanceof Error && error.message === 'CHAT_LIMIT_EXCEEDED') {
+          setShowUpgradeModal(true);
+        } else {
+          console.error('Failed to create chat:', error);
+        }
         return;
       }
     }
@@ -212,12 +236,21 @@ function App() {
     
     // Send message to AI service
     setIsLoading(true);
+    setStreamingMessage('');
     
     try {
-      const response = await sendMessage(content, selectedModel, conversationHistory);
+      // Use streaming for better UX
+      const response = await sendMessage(
+        content, 
+        selectedModel, 
+        conversationHistory,
+        (chunk: string) => {
+          setStreamingMessage(prev => prev + chunk);
+        }
+      );
       
       // Add assistant message to database and UI
-      const assistantMessage = await addMessage(chatId, 'assistant', response);
+      const assistantMessage = await addMessage(chatId, 'assistant', streamingMessage || response);
       
       setChats(prev => prev.map(chat => 
         chat.id === chatId 
@@ -228,11 +261,13 @@ function App() {
       console.error('Failed to send message:', error);
     } finally {
       setIsLoading(false);
+      setStreamingMessage('');
     }
   };
 
   const handleStopGeneration = () => {
     setIsLoading(false);
+    setStreamingMessage('');
   };
 
   const handleSignIn = async (email: string, password: string) => {
@@ -247,8 +282,15 @@ function App() {
     await signOut();
     setChats([]);
     setActiveChat(null);
+    setStreamingMessage('');
     setShowAuthModal(true);
   };
+
+  const handleUpgrade = async () => {
+    await upgradeToPlusSubscription();
+    setShowUpgradeModal(false);
+  };
+
   const currentChat = getCurrentChat();
 
   return (
@@ -262,6 +304,8 @@ function App() {
         onRenameChat={handleRenameChat}
         onSignOut={handleSignOut}
         user={user}
+        subscription={subscription}
+        onUpgrade={handleUpgrade}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
@@ -305,6 +349,7 @@ function App() {
           <ChatArea
             messages={currentChat?.messages || []}
             isLoading={isLoading}
+            streamingMessage={streamingMessage}
           />
         </div>
         
@@ -325,6 +370,16 @@ function App() {
         onSignUp={handleSignUp}
         isLoading={dbLoading}
         error={dbError}
+      />
+      
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={handleUpgrade}
+        isLoading={dbLoading}
+        currentCount={subscription?.current_count || 0}
+        limit={subscription?.chat_limit || 5}
       />
     </div>
   );

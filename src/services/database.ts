@@ -30,6 +30,12 @@ export interface DatabaseMessage {
   created_at: string;
 }
 
+export interface UserSubscription {
+  plan: 'free' | 'plus';
+  chat_limit: number;
+  current_count: number;
+}
+
 export interface ChatWithMessages extends DatabaseChat {
   messages: DatabaseMessage[];
 }
@@ -95,6 +101,18 @@ export class ChatService {
   static async createChat(title: string, preview: string = ''): Promise<DatabaseChat> {
     if (!supabase) {
       throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
+    // Check chat limit first
+    const { data: canCreate, error: limitError } = await supabase.rpc('check_chat_limit');
+    
+    if (limitError) {
+      console.error('Error checking chat limit:', limitError);
+      throw new Error('Failed to check chat limit');
+    }
+    
+    if (!canCreate) {
+      throw new Error('CHAT_LIMIT_EXCEEDED');
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -227,6 +245,51 @@ export class ChatService {
     }
 
     return data || [];
+  }
+}
+
+// Subscription operations
+export class SubscriptionService {
+  // Get user subscription info
+  static async getUserSubscription(): Promise<UserSubscription> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
+    const { data, error } = await supabase.rpc('get_user_subscription');
+    
+    if (error) {
+      console.error('Error fetching subscription:', error);
+      throw new Error('Failed to fetch subscription');
+    }
+
+    return data[0] || { plan: 'free', chat_limit: 5, current_count: 0 };
+  }
+
+  // Upgrade to plus
+  static async upgradeToPlusSubscription(): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { error } = await supabase
+      .from('user_subscriptions')
+      .upsert({
+        user_id: user.id,
+        plan: 'plus',
+        chat_limit: 999999 // Unlimited
+      });
+
+    if (error) {
+      console.error('Error upgrading subscription:', error);
+      throw new Error('Failed to upgrade subscription');
+    }
   }
 }
 

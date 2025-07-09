@@ -12,14 +12,15 @@ interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
   chatId?: string;
+  streamingMessage?: string;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId, streamingMessage }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, chatId]); // Re-scroll when chat changes
+  }, [messages, chatId, streamingMessage]); // Re-scroll when chat changes or streaming
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
@@ -76,7 +77,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId }) => {
           />
         ))}
         
-        {isLoading && (
+        {(isLoading || streamingMessage) && (
           <div className="flex gap-3 md:gap-6 p-4 md:p-8 border-b border-zinc-700 md:border-zinc-300">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
@@ -87,11 +88,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId }) => {
               <div className="flex items-center gap-2 mb-2 md:mb-3">
                 <span className="font-semibold text-white md:text-zinc-900">ChatGPT</span>
               </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              </div>
+              {streamingMessage ? (
+                <ChatMessage
+                  message={{
+                    id: 'streaming',
+                    type: 'assistant',
+                    content: streamingMessage,
+                    timestamp: new Date()
+                  }}
+                  onCopy={handleCopy}
+                  isStreaming={true}
+                  streamingContent={streamingMessage}
+                />
+              ) : (
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              )}
             </div>
           </div>
         )}

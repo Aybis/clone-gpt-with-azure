@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChatService, DatabaseChat, DatabaseMessage, AuthService } from '../services/database';
+import { ChatService, DatabaseChat, DatabaseMessage, AuthService, SubscriptionService, UserSubscription } from '../services/database';
 
 // Convert database types to app types
 const convertDatabaseChatToAppChat = (dbChat: DatabaseChat, messages: DatabaseMessage[] = []) => ({
@@ -19,16 +19,40 @@ export const useDatabase = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
   // Initialize auth state
   useEffect(() => {
     // Get initial user
-    AuthService.getCurrentUser().then(setUser);
+    AuthService.getCurrentUser().then(async (user) => {
+      setUser(user);
+      if (user) {
+        try {
+          const sub = await SubscriptionService.getUserSubscription();
+          setSubscription(sub);
+        } catch (err) {
+          console.error('Failed to load subscription:', err);
+        }
+      }
+    });
 
     // Listen for auth changes
-    const { data: { subscription } } = AuthService.onAuthStateChange(setUser);
+    const { data: { subscription: authSubscription } } = AuthService.onAuthStateChange(async (user) => {
+      setUser(user);
+      if (user) {
+        try {
+          const sub = await SubscriptionService.getUserSubscription();
+          setSubscription(sub);
+        } catch (err) {
+          console.error('Failed to load subscription:', err);
+          setSubscription(null);
+        }
+      } else {
+        setSubscription(null);
+      }
+    });
 
-    return () => subscription.unsubscribe();
+    return () => authSubscription.unsubscribe();
   }, []);
 
   // Load chats from database
@@ -80,6 +104,11 @@ export const useDatabase = () => {
 
     try {
       const dbChat = await ChatService.createChat(title, preview);
+      
+      // Refresh subscription info after creating chat
+      const updatedSub = await SubscriptionService.getUserSubscription();
+      setSubscription(updatedSub);
+      
       return convertDatabaseChatToAppChat(dbChat);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create chat';
@@ -118,6 +147,10 @@ export const useDatabase = () => {
 
     try {
       await ChatService.deleteChat(chatId);
+      
+      // Refresh subscription info after deleting chat
+      const updatedSub = await SubscriptionService.getUserSubscription();
+      setSubscription(updatedSub);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete chat';
       setError(errorMessage);
@@ -218,12 +251,33 @@ export const useDatabase = () => {
     }
   }, []);
 
+  // Upgrade to plus
+  const upgradeToPlusSubscription = useCallback(async () => {
+    if (!user) throw new Error('User not authenticated');
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await SubscriptionService.upgradeToPlusSubscription();
+      const updatedSub = await SubscriptionService.getUserSubscription();
+      setSubscription(updatedSub);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upgrade subscription';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   return {
     // State
     isLoading,
     error,
     user,
     isAuthenticated: !!user,
+    subscription,
 
     // Chat operations
     loadChats,
@@ -238,6 +292,7 @@ export const useDatabase = () => {
     signIn,
     signUp,
     signOut,
+    upgradeToPlusSubscription,
 
     // Utilities
     clearError: () => setError(null)
