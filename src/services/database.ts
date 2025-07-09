@@ -4,10 +4,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('Missing Supabase environment variables. Please check your .env file.');
+  console.error('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // Database types
 export interface DatabaseChat {
@@ -35,6 +38,10 @@ export interface ChatWithMessages extends DatabaseChat {
 export class ChatService {
   // Get all chats for the current user
   static async getChats(): Promise<DatabaseChat[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase
       .from('chats')
       .select('*')
@@ -50,6 +57,10 @@ export class ChatService {
 
   // Get a specific chat with its messages
   static async getChatWithMessages(chatId: string): Promise<ChatWithMessages | null> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data: chat, error: chatError } = await supabase
       .from('chats')
       .select('*')
@@ -82,6 +93,10 @@ export class ChatService {
 
   // Create a new chat
   static async createChat(title: string, preview: string = ''): Promise<DatabaseChat> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -108,6 +123,10 @@ export class ChatService {
 
   // Update chat title and preview
   static async updateChat(chatId: string, updates: { title?: string; preview?: string }): Promise<DatabaseChat> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase
       .from('chats')
       .update(updates)
@@ -125,6 +144,10 @@ export class ChatService {
 
   // Delete a chat (messages will be deleted automatically due to CASCADE)
   static async deleteChat(chatId: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { error } = await supabase
       .from('chats')
       .delete()
@@ -138,6 +161,10 @@ export class ChatService {
 
   // Add a message to a chat
   static async addMessage(chatId: string, role: 'user' | 'assistant', content: string): Promise<DatabaseMessage> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase
       .from('messages')
       .insert({
@@ -164,6 +191,10 @@ export class ChatService {
 
   // Get messages for a specific chat
   static async getMessages(chatId: string): Promise<DatabaseMessage[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -180,6 +211,10 @@ export class ChatService {
 
   // Search chats by title
   static async searchChats(query: string): Promise<DatabaseChat[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase
       .from('chats')
       .select('*')
@@ -199,6 +234,10 @@ export class ChatService {
 export class AuthService {
   // Sign up with email and password
   static async signUp(email: string, password: string) {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -213,6 +252,10 @@ export class AuthService {
 
   // Sign in with email and password
   static async signIn(email: string, password: string) {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -227,6 +270,10 @@ export class AuthService {
 
   // Sign out
   static async signOut() {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized. Please check your environment variables.');
+    }
+
     const { error } = await supabase.auth.signOut();
     
     if (error) {
@@ -236,12 +283,21 @@ export class AuthService {
 
   // Get current user
   static async getCurrentUser() {
+    if (!supabase) {
+      return null;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     return user;
   }
 
   // Listen to auth state changes
   static onAuthStateChange(callback: (user: any) => void) {
+    if (!supabase) {
+      callback(null);
+      return { data: { subscription: null } };
+    }
+
     return supabase.auth.onAuthStateChange((event, session) => {
       callback(session?.user || null);
     });

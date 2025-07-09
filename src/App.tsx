@@ -156,6 +156,7 @@ function App() {
     if (!content.trim()) return;
 
     let chatId = activeChat;
+   let userMessage;
     
     // Create new chat if none is active
     if (!chatId) {
@@ -175,7 +176,7 @@ function App() {
 
     // Add user message to database and UI
     try {
-      const userMessage = await addMessage(chatId, 'user', content);
+     userMessage = await addMessage(chatId, 'user', content);
       
       setChats(prev => prev.map(chat => 
         chat.id === chatId 
