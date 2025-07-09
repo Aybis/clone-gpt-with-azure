@@ -6,6 +6,24 @@ export interface AzureOpenAIConfig {
   deploymentName: string;
 }
 
+export interface ModelConfig {
+  model: string;
+  maxTokens: number;
+  temperature: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+}
+
+export interface AzureModel {
+  id: string;
+  name: string;
+  description: string;
+  maxTokens: number;
+  deploymentName: string;
+  costPer1kTokens: number;
+}
+
 export interface ChatCompletionMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;

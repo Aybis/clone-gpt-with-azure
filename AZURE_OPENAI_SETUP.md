@@ -38,13 +38,24 @@ This guide will help you integrate your ChatGPT clone with Azure OpenAI services
 
 ## Step 4: Environment Variables
 
-Create a `.env` file in your project root with:
+The project now uses Vite environment variables. Create a `.env` file in your project root with:
 
 ```env
-REACT_APP_AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
-REACT_APP_AZURE_OPENAI_API_KEY=your-api-key-here
-REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
+VITE_AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
+VITE_AZURE_OPENAI_API_KEY=your-api-key-here
+VITE_AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
+VITE_AZURE_OPENAI_API_VERSION=2024-02-15-preview
+
+# Optional: Default model settings
+VITE_DEFAULT_MODEL=gpt-4
+VITE_MAX_TOKENS=1000
+VITE_TEMPERATURE=0.7
 ```
+
+**Important:** 
+- Use `VITE_` prefix for all environment variables in Vite
+- Never commit your `.env` file to version control
+- Use `.env.example` as a template for other developers
 
 ## Step 5: Install Dependencies
 
@@ -52,9 +63,28 @@ REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 npm install
 ```
 
-## Step 6: Update Configuration
+## Step 6: Development vs Production
 
-Update `src/config/azure-config.ts` with your actual values or use environment variables.
+The application automatically detects if Azure OpenAI is configured:
+
+**Development Mode (Mock):**
+- If environment variables are not set, uses mock responses
+- Perfect for development and testing
+- No API costs incurred
+- Shows "Mock Mode" status in sidebar
+
+**Production Mode (Azure):**
+- Uses actual Azure OpenAI when properly configured
+- Shows connection status in sidebar
+- Includes health check and error handling
+
+## Step 7: Configuration Validation
+
+The application includes automatic validation:
+- Checks for required environment variables
+- Validates API connection on startup
+- Shows configuration status in the sidebar
+- Provides helpful error messages
 
 ## API Endpoints You'll Use
 

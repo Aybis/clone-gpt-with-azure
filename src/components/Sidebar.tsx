@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AzureStatus from './AzureStatus';
 import { 
   MessageSquare, 
   Search, 
@@ -94,6 +95,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Plus size={18} />
           <span className="font-medium">New chat</span>
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="p-4 border-b border-zinc-300">
+        <AzureStatus />
       </div>
 
       {/* Search */}
@@ -214,6 +220,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Search */}
       <div className="p-3 border-b border-zinc-700">
+        <div className="mb-3">
+          <AzureStatus />
+        </div>
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
