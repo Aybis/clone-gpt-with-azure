@@ -450,3 +450,5 @@ export function createAIService(config: AIConfig): BaseAIService {
       throw new Error(`Unsupported provider: ${config.provider}`);
   }
 }
+
+export { BaseAIService }
