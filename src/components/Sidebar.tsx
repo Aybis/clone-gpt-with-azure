@@ -25,6 +25,8 @@ interface SidebarProps {
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
   onRenameChat: (chatId: string, newTitle: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,11 +36,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   onDeleteChat,
   onRenameChat
+  isOpen,
+  onClose
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingChat, setEditingChat] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const filteredChats = chats.filter(chat =>
     chat.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -80,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => {
             onNewChat();
-            setIsMobileOpen(false);
+            onClose();
           }}
           className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-gray-700"
         >
@@ -115,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }`}
                 onClick={() => {
                   onChatSelect(chat.id);
-                  setIsMobileOpen(false);
+                  onClose();
                 }}
               >
                 <MessageSquare size={16} className="text-gray-500 flex-shrink-0" />
@@ -183,19 +186,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white text-gray-700 rounded-lg shadow-lg border border-gray-200"
-      >
-        <Menu size={20} />
-      </button>
-
       {/* Mobile Overlay */}
-      {isMobileOpen && (
+      {isOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={onClose}
         />
       )}
 
@@ -204,11 +199,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         fixed lg:relative inset-y-0 left-0 z-50 lg:z-0
         w-80 bg-white h-screen flex flex-col border-r border-gray-200
         transform transition-transform duration-300 ease-in-out
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Mobile Close Button */}
         <button
-          onClick={() => setIsMobileOpen(false)}
+          onClick={onClose}
           className="lg:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700"
         >
           <X size={20} />

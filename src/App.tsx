@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import ChatInput from './components/ChatInput';
 import ModelSelector from './components/ModelSelector';
+import { Menu } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -24,6 +25,7 @@ function App() {
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Initialize with sample chats
   useEffect(() => {
@@ -284,16 +286,30 @@ I understand you're asking about **${input}**. This is an interesting topic!
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         onRenameChat={handleRenameChat}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
       
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
-        <div className="bg-gray-800 border-b border-gray-700 p-3 flex-shrink-0">
-          <div className="max-w-4xl mx-auto flex items-center justify-center">
+        <div className="bg-gray-900 border-b border-gray-800 p-3 flex-shrink-0">
+          <div className="max-w-4xl mx-auto flex items-center justify-between lg:justify-center">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            
+            {/* Model Selector */}
             <ModelSelector 
               selectedModel={selectedModel} 
               onModelSelect={setSelectedModel} 
             />
+            
+            {/* Spacer for mobile to center the model selector */}
+            <div className="lg:hidden w-10"></div>
           </div>
         </div>
         

@@ -18,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
   const isUser = message.type === 'user';
 
   return (
-    <div className={`group flex gap-4 md:gap-6 p-6 md:p-8 border-b border-gray-100 hover:bg-gray-50/50 transition-colors`}>
+    <div className={`group flex gap-3 md:gap-6 p-4 md:p-8 border-b border-gray-100 hover:bg-gray-50/50 transition-colors`}>
       <div className="flex-shrink-0">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
           isUser 
@@ -34,7 +34,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
       </div>
       
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-2 md:mb-3">
           <span className="font-semibold text-gray-900">
             {isUser ? 'You' : 'ChatGPT'}
           </span>
@@ -42,12 +42,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
         
         <div className="prose prose-gray max-w-none">
           {isUser ? (
-            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-base">
+            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
               {message.content}
             </p>
           ) : (
             <ReactMarkdown 
-              className="text-gray-800 leading-relaxed text-base"
+              className="text-gray-800 leading-relaxed text-sm md:text-base"
               components={{
                 code: ({ node, inline, className, children, ...props }) => {
                   if (inline) {
@@ -59,7 +59,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
                   }
                   return (
                     <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4">
-                      <code className="text-sm" {...props}>
+                      <code className="text-xs md:text-sm" {...props}>
                         {children}
                       </code>
                     </pre>
@@ -71,49 +71,49 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
                   </blockquote>
                 ),
                 ul: ({ children }) => (
-                  <ul className="list-disc list-inside space-y-2 my-4">
+                  <ul className="list-disc list-inside space-y-1 md:space-y-2 my-3 md:my-4">
                     {children}
                   </ul>
                 ),
                 ol: ({ children }) => (
-                  <ol className="list-decimal list-inside space-y-2 my-4">
+                  <ol className="list-decimal list-inside space-y-1 md:space-y-2 my-3 md:my-4">
                     {children}
                   </ol>
                 ),
                 h1: ({ children }) => (
-                  <h1 className="text-2xl font-bold mt-6 mb-4 text-gray-900">
+                  <h1 className="text-xl md:text-2xl font-bold mt-4 md:mt-6 mb-3 md:mb-4 text-gray-900">
                     {children}
                   </h1>
                 ),
                 h2: ({ children }) => (
-                  <h2 className="text-xl font-bold mt-5 mb-3 text-gray-900">
+                  <h2 className="text-lg md:text-xl font-bold mt-4 md:mt-5 mb-2 md:mb-3 text-gray-900">
                     {children}
                   </h2>
                 ),
                 h3: ({ children }) => (
-                  <h3 className="text-lg font-bold mt-4 mb-2 text-gray-900">
+                  <h3 className="text-base md:text-lg font-bold mt-3 md:mt-4 mb-2 text-gray-900">
                     {children}
                   </h3>
                 ),
                 table: ({ children }) => (
-                  <div className="overflow-x-auto my-4">
+                  <div className="overflow-x-auto my-3 md:my-4">
                     <table className="min-w-full border-collapse border border-gray-300 rounded-lg">
                       {children}
                     </table>
                   </div>
                 ),
                 th: ({ children }) => (
-                  <th className="border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left text-gray-900">
+                  <th className="border border-gray-300 px-2 md:px-4 py-1 md:py-2 bg-gray-50 font-semibold text-left text-gray-900 text-sm md:text-base">
                     {children}
                   </th>
                 ),
                 td: ({ children }) => (
-                  <td className="border border-gray-300 px-4 py-2 text-gray-800">
+                  <td className="border border-gray-300 px-2 md:px-4 py-1 md:py-2 text-gray-800 text-sm md:text-base">
                     {children}
                   </td>
                 ),
                 p: ({ children }) => (
-                  <p className="mb-4 last:mb-0 leading-relaxed">
+                  <p className="mb-3 md:mb-4 last:mb-0 leading-relaxed">
                     {children}
                   </p>
                 ),
@@ -125,24 +125,24 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
         </div>
         
         {!isUser && (
-          <div className="flex items-center gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 md:gap-2 mt-3 md:mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => onCopy(message.content)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <Copy size={14} />
+              <Copy size={12} className="md:w-3.5 md:h-3.5" />
               Copy
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
-              <ThumbsUp size={14} />
+            <button className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
+              <ThumbsUp size={12} className="md:w-3.5 md:h-3.5" />
               Good
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
-              <ThumbsDown size={14} />
+            <button className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
+              <ThumbsDown size={12} className="md:w-3.5 md:h-3.5" />
               Bad
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
-              <RotateCcw size={14} />
+            <button className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
+              <RotateCcw size={12} className="md:w-3.5 md:h-3.5" />
               Regenerate
             </button>
           </div>
