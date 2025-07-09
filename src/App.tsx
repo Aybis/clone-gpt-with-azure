@@ -26,6 +26,7 @@ function App() {
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // Initialize with sample chats
   useEffect(() => {
@@ -279,28 +280,41 @@ I understand you're asking about **${input}**. This is an interesting topic!
 
   return (
     <div className="flex h-screen bg-zinc-800 md:bg-zinc-100">
-      <Sidebar
-        chats={chats}
-        activeChat={activeChat}
-        onChatSelect={handleChatSelect}
-        onNewChat={handleNewChat}
-        onDeleteChat={handleDeleteChat}
-        onRenameChat={handleRenameChat}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      {isSidebarVisible && (
+        <Sidebar
+          chats={chats}
+          activeChat={activeChat}
+          onChatSelect={handleChatSelect}
+          onNewChat={handleNewChat}
+          onDeleteChat={handleDeleteChat}
+          onRenameChat={handleRenameChat}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
+        />
+      )}
       
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
         <div className="bg-zinc-800 border-b border-zinc-700 p-3 flex-shrink-0">
           <div className="max-w-4xl mx-auto flex items-center justify-between lg:justify-center">
             {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
-            >
-              <Menu size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              {!isSidebarVisible && (
+                <button
+                  onClick={() => setIsSidebarVisible(true)}
+                  className="hidden lg:block p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
+                >
+                  <Menu size={20} />
+                </button>
+              )}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
             
             {/* Model Selector */}
             <ModelSelector 

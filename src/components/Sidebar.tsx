@@ -27,6 +27,7 @@ interface SidebarProps {
   onRenameChat: (chatId: string, newTitle: string) => void;
   isOpen: boolean;
   onClose: () => void;
+  onToggleVisibility: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -38,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onRenameChat,
   isOpen,
   onClose
+  onToggleVisibility
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingChat, setEditingChat] = useState<string | null>(null);
@@ -94,16 +96,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Search */}
       <div className="p-4 border-b border-zinc-300">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Search chats"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-          />
-        </div>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search chats"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+          </div>
+        </form>
       </div>
 
       {/* Chat History */}
@@ -188,6 +192,15 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Header */}
       <div className="p-3 border-b border-zinc-700">
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={onToggleVisibility}
+            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
+          >
+            <X size={18} />
+          </button>
+          <span className="text-white font-medium">ChatGPT</span>
+        </div>
         <button
           onClick={onNewChat}
           className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-700 transition-colors text-white"
@@ -199,16 +212,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Search */}
       <div className="p-3 border-b border-zinc-700">
-        <div className="relative">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="Search chats"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-zinc-700 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white placeholder-gray-400"
-          />
-        </div>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search chats"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-zinc-700 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white placeholder-zinc-400"
+            />
+          </div>
+        </form>
       </div>
 
       {/* Chat History */}
