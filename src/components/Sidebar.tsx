@@ -339,7 +339,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           Unlimited access, team features, and more
         </div>
       </div>
-      </div>
     </>
   );
 
