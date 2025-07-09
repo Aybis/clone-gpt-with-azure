@@ -26,18 +26,18 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-white">
+      <div className="h-full flex items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-white">
         <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-2xl md:text-5xl font-normal text-gray-800 mb-4 md:mb-6 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-normal mb-6 md:mb-8 leading-tight">
             <span className="text-white md:text-gray-800">
-            Hey, Ama. Ready to dive in?
+              Hey, Ama. Ready to dive in?
             </span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-400 md:text-gray-600 mb-8 md:mb-12 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-400 md:text-gray-600 mb-12 md:mb-16 leading-relaxed">
             I'm here to help with questions, creative projects, and more.
           </p>
           
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-3xl mx-auto">
+          <div className="hidden md:grid grid-cols-2 gap-4 max-w-2xl mx-auto">
             <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">💡</div>
               <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Creative writing</h3>

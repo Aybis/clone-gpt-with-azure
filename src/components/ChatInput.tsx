@@ -49,15 +49,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-gray-800 md:border-gray-200 bg-gray-900 md:bg-white p-4 flex-shrink-0">
+    <div className="border-t border-gray-800 md:border-gray-200 bg-gray-900 md:bg-white p-4 md:p-6 flex-shrink-0">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="relative">
-          <div className="flex items-end gap-2 md:gap-3 bg-gray-800 md:bg-white border border-gray-700 md:border-gray-300 rounded-3xl p-2 md:p-3 shadow-sm focus-within:border-gray-500 md:focus-within:border-gray-400 focus-within:shadow-md transition-all">
+          <div className="flex items-end gap-2 md:gap-3 bg-gray-800 md:bg-gray-50 border border-gray-700 md:border-gray-300 rounded-3xl p-3 md:p-4 shadow-sm focus-within:border-gray-500 md:focus-within:border-gray-400 focus-within:shadow-md transition-all">
             <button
               type="button"
-              className="p-1.5 md:p-2 text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
+              className="p-2 text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
             >
-              <Paperclip size={18} className="md:w-5 md:h-5" />
+              <Paperclip size={20} />
             </button>
             
             <div className="flex-1 min-w-0">
@@ -67,7 +67,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything"
-                className="w-full bg-transparent border-none outline-none resize-none text-white md:text-gray-900 placeholder-gray-400 md:placeholder-gray-500 max-h-32 text-sm md:text-base leading-6 py-1.5 md:py-2"
+                className="w-full bg-transparent border-none outline-none resize-none text-white md:text-gray-900 placeholder-gray-400 md:placeholder-gray-500 max-h-32 text-base leading-6 py-2"
                 rows={1}
                 disabled={isLoading}
               />
@@ -80,10 +80,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 className={`p-2 rounded-xl transition-colors hidden md:block ${
                   isRecording
                     ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
-                    : 'text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100'
+                    : 'text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-200'
                 }`}
               >
-                <Mic size={18} className="md:w-5 md:h-5" />
+                <Mic size={20} />
               </button>
               
               {isLoading ? (
@@ -92,7 +92,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   onClick={onStopGeneration}
                   className="p-1.5 md:p-2 text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100 rounded-xl transition-colors"
                 >
-                  <Square size={18} className="md:w-5 md:h-5" />
+                  <Square size={20} />
                 </button>
               ) : (
                 <button
@@ -104,7 +104,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       : 'text-gray-500 bg-gray-700 md:text-gray-400 md:bg-gray-200 cursor-not-allowed'
                   }`}
                 >
-                  <ArrowUp size={18} className={`md:w-5 md:h-5 ${input.trim() ? 'text-black md:text-white' : ''}`} />
+                  <ArrowUp size={20} className={input.trim() ? 'text-black md:text-white' : ''} />
                 </button>
               )}
             </div>
