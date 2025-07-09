@@ -49,13 +49,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-gray-200 bg-white p-4 flex-shrink-0">
+    <div className="border-t border-gray-800 md:border-gray-200 bg-gray-900 md:bg-white p-4 flex-shrink-0">
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="relative">
-          <div className="flex items-end gap-2 md:gap-3 bg-white border border-gray-300 rounded-3xl p-2 md:p-3 shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
+          <div className="flex items-end gap-2 md:gap-3 bg-gray-800 md:bg-white border border-gray-700 md:border-gray-300 rounded-3xl p-2 md:p-3 shadow-sm focus-within:border-gray-500 md:focus-within:border-gray-400 focus-within:shadow-md transition-all">
             <button
               type="button"
-              className="p-1.5 md:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
+              className="p-1.5 md:p-2 text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
             >
               <Paperclip size={18} className="md:w-5 md:h-5" />
             </button>
@@ -66,8 +66,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Message ChatGPT"
-                className="w-full bg-transparent border-none outline-none resize-none text-gray-900 placeholder-gray-500 max-h-32 text-sm md:text-base leading-6 py-1.5 md:py-2"
+                placeholder="Ask anything"
+                className="w-full bg-transparent border-none outline-none resize-none text-white md:text-gray-900 placeholder-gray-400 md:placeholder-gray-500 max-h-32 text-sm md:text-base leading-6 py-1.5 md:py-2"
                 rows={1}
                 disabled={isLoading}
               />
@@ -77,10 +77,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={toggleRecording}
-                className={`p-2 rounded-xl transition-colors ${
+                className={`p-2 rounded-xl transition-colors hidden md:block ${
                   isRecording
                     ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100'
                 }`}
               >
                 <Mic size={18} className="md:w-5 md:h-5" />
@@ -90,7 +90,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 <button
                   type="button"
                   onClick={onStopGeneration}
-                  className="p-1.5 md:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-1.5 md:p-2 text-gray-400 md:text-gray-500 hover:text-gray-200 md:hover:text-gray-700 hover:bg-gray-700 md:hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   <Square size={18} className="md:w-5 md:h-5" />
                 </button>
@@ -100,18 +100,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   disabled={!input.trim()}
                   className={`p-1.5 md:p-2 rounded-xl transition-colors ${
                     input.trim()
-                      ? 'text-white bg-black hover:bg-gray-800'
-                      : 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                      ? 'text-white bg-white hover:bg-gray-200 md:text-white md:bg-black md:hover:bg-gray-800'
+                      : 'text-gray-500 bg-gray-700 md:text-gray-400 md:bg-gray-200 cursor-not-allowed'
                   }`}
                 >
-                  <ArrowUp size={18} className="md:w-5 md:h-5" />
+                  <ArrowUp size={18} className={`md:w-5 md:h-5 ${input.trim() ? 'text-black md:text-white' : ''}`} />
                 </button>
               )}
             </div>
           </div>
         </form>
         
-        <div className="flex items-center justify-center mt-2 md:mt-3 text-xs text-gray-500">
+        <div className="flex items-center justify-center mt-2 md:mt-3 text-xs text-gray-400 md:text-gray-500">
           <span>ChatGPT can make mistakes. Check important info.</span>
         </div>
       </div>
