@@ -451,4 +451,4 @@ export function createAIService(config: AIConfig): BaseAIService {
   }
 }
 
-export { BaseAIService }
+export { BaseAIServices }
