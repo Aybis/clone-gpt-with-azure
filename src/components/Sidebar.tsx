@@ -26,6 +26,8 @@ interface SidebarProps {
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
   onRenameChat: (chatId: string, newTitle: string) => void;
+  onSignOut: () => void;
+  user: any;
   isOpen: boolean;
   onClose: () => void;
   isCollapsed: boolean;
@@ -39,6 +41,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   onDeleteChat,
   onRenameChat,
+  onSignOut,
+  user,
   isOpen,
   onClose,
   isCollapsed,
@@ -185,10 +189,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             <User size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-zinc-900">Ama</div>
-            <div className="text-xs text-zinc-500">Free plan</div>
+            <div className="text-sm font-medium text-zinc-900">
+              {user?.email || 'User'}
+            </div>
+            <div className="text-xs text-zinc-500">Authenticated</div>
           </div>
-          <button className="p-1 hover:bg-zinc-200 rounded text-zinc-500">
+          <button 
+            onClick={onSignOut}
+            className="p-1 hover:bg-zinc-200 rounded text-zinc-500"
+            title="Sign Out"
+          >
             <Settings size={16} />
           </button>
         </div>
@@ -303,10 +313,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             <User size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <div className="text-base font-medium text-white">Ama</div>
-            <div className="text-xs text-zinc-400">Free plan</div>
+            <div className="text-base font-medium text-white">
+              {user?.email || 'User'}
+            </div>
+            <div className="text-xs text-zinc-400">Authenticated</div>
           </div>
-          <button className="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors">
+          <button 
+            onClick={onSignOut}
+            className="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors"
+            title="Sign Out"
+          >
             <Settings size={18} />
           </button>
         </div>

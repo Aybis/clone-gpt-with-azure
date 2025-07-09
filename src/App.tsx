@@ -3,8 +3,10 @@ import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import ChatInput from './components/ChatInput';
 import ModelSelector from './components/ModelSelector';
+import AuthModal from './components/AuthModal';
 import { Menu } from 'lucide-react';
 import { useAI } from './hooks/useAI';
+import { useDatabase } from './hooks/useDatabase';
 import { getAvailableModels } from './config/ai-providers';
 
 interface Message {
@@ -31,6 +33,24 @@ function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const { sendMessage, currentProvider } = useAI();
+  const { 
+    user, 
+    isAuthenticated, 
+    loadChats, 
+    loadChatWithMessages,
+    createChat, 
+    updateChat, 
+    deleteChat, 
+    addMessage,
+    signIn, 
+    signUp, 
+    signOut,
+    isLoading: dbLoading,
+    error: dbError,
+    clearError
+  } = useDatabase();
+  
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Initialize with default model for current provider
   useEffect(() => {
@@ -40,160 +60,144 @@ function App() {
     }
   }, [currentProvider, selectedModel]);
 
-  // Initialize with sample chats
+  // Load chats from database when user is authenticated
   useEffect(() => {
-    const sampleChats: Chat[] = [
-      {
-        id: '1',
-        title: 'NextResponse redirect vs rewrite',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        preview: 'What is the difference between redirect and rewrite...',
-        messages: [
-          {
-            id: '1-1',
-            type: 'user',
-            content: 'What is the difference between redirect and rewrite in NextResponse?',
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000)
-          },
-          {
-            id: '1-2',
-            type: 'assistant',
-            content: `Great question! In Next.js, **NextResponse.redirect()** and **NextResponse.rewrite()** serve different purposes:
+    if (isAuthenticated) {
+      loadChats().then(setChats);
+    } else {
+      setChats([]);
+      setActiveChat(null);
+    }
+  }, [isAuthenticated, loadChats]);
 
-## NextResponse.redirect()
-- Sends a 301/302 HTTP redirect response to the client
-- Changes the URL in the browser address bar
-- The client makes a new request to the redirect destination
-- Visible to the user and search engines
-
-## NextResponse.rewrite()
-- Internally forwards the request to a different URL
-- Keeps the original URL in the browser address bar
-- The client doesn't know about the internal forwarding
-- Invisible to the user and search engines
-
-### Example Usage:
-
-\`\`\`javascript
-// Redirect - user sees new URL
-return NextResponse.redirect(new URL('/login', request.url))
-
-// Rewrite - user keeps original URL
-return NextResponse.rewrite(new URL('/api/v2/users', request.url))
-\`\`\`
-
-**Use redirect for:** permanent moves, temporary redirects, or when you want users to see the new URL.
-
-**Use rewrite for:** A/B testing, internationalization, or serving different content while keeping the same URL.`,
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 30000)
-          }
-        ]
-      },
-      {
-        id: '2',
-        title: 'Wultra SSL Pinning iOS',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        preview: 'How to implement SSL pinning in iOS with Wultra...',
-        messages: [
-          {
-            id: '2-1',
-            type: 'user',
-            content: 'How to implement SSL pinning in iOS with Wultra?',
-            timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000)
-          }
-        ]
-      },
-      {
-        id: '3',
-        title: 'Dokumentasi API Maya',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        preview: 'Can you help me create API documentation...',
-        messages: [
-          {
-            id: '3-1',
-            type: 'user',
-            content: 'Can you help me create API documentation for Maya project?',
-            timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-          }
-        ]
-      }
-    ];
-    
-    setChats(sampleChats);
-  }, []);
+  // Show auth modal if not authenticated and trying to use the app
+  useEffect(() => {
+    if (!isAuthenticated && !showAuthModal) {
+      setShowAuthModal(true);
+    }
+  }, [isAuthenticated, showAuthModal]);
 
   const getCurrentChat = () => {
     return chats.find(chat => chat.id === activeChat);
   };
 
-  const handleNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: 'New Chat',
-      timestamp: new Date(),
-      preview: '',
-      messages: []
-    };
-    
-    setChats(prev => [newChat, ...prev]);
-    setActiveChat(newChat.id);
-  };
+  const handleNewChat = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
 
-  const handleChatSelect = (chatId: string) => {
-    setActiveChat(chatId);
-  };
-
-  const handleDeleteChat = (chatId: string) => {
-    setChats(prev => prev.filter(chat => chat.id !== chatId));
-    if (activeChat === chatId) {
-      setActiveChat(null);
+    try {
+      const newChat = await createChat('New Chat');
+      setChats(prev => [newChat, ...prev]);
+      setActiveChat(newChat.id);
+    } catch (error) {
+      console.error('Failed to create chat:', error);
     }
   };
 
-  const handleRenameChat = (chatId: string, newTitle: string) => {
-    setChats(prev => prev.map(chat => 
-      chat.id === chatId ? { ...chat, title: newTitle } : chat
-    ));
+  const handleChatSelect = async (chatId: string) => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    setActiveChat(chatId);
+    
+    // Load full chat with messages if not already loaded
+    const currentChat = chats.find(chat => chat.id === chatId);
+    if (currentChat && currentChat.messages.length === 0) {
+      try {
+        const fullChat = await loadChatWithMessages(chatId);
+        if (fullChat) {
+          setChats(prev => prev.map(chat => 
+            chat.id === chatId ? fullChat : chat
+          ));
+        }
+      } catch (error) {
+        console.error('Failed to load chat messages:', error);
+      }
+    }
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
+    if (!isAuthenticated) return;
+
+    try {
+      await deleteChat(chatId);
+      setChats(prev => prev.filter(chat => chat.id !== chatId));
+      if (activeChat === chatId) {
+        setActiveChat(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
+    }
+  };
+
+  const handleRenameChat = async (chatId: string, newTitle: string) => {
+    if (!isAuthenticated) return;
+
+    try {
+      await updateChat(chatId, { title: newTitle });
+      setChats(prev => prev.map(chat => 
+        chat.id === chatId ? { ...chat, title: newTitle } : chat
+      ));
+    } catch (error) {
+      console.error('Failed to rename chat:', error);
+    }
   };
 
   const handleSendMessage = async (content: string) => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!content.trim()) return;
 
     let chatId = activeChat;
     
     // Create new chat if none is active
     if (!chatId) {
-      const newChat: Chat = {
-        id: Date.now().toString(),
-        title: content.length > 50 ? content.substring(0, 50) + '...' : content,
-        timestamp: new Date(),
-        preview: content.length > 100 ? content.substring(0, 100) + '...' : content,
-        messages: []
-      };
-      
-      setChats(prev => [newChat, ...prev]);
-      chatId = newChat.id;
-      setActiveChat(chatId);
+      try {
+        const title = content.length > 50 ? content.substring(0, 50) + '...' : content;
+        const preview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        const newChat = await createChat(title, preview);
+        
+        setChats(prev => [newChat, ...prev]);
+        chatId = newChat.id;
+        setActiveChat(chatId);
+      } catch (error) {
+        console.error('Failed to create chat:', error);
+        return;
+      }
     }
 
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content,
-      timestamp: new Date()
-    };
-
-    setChats(prev => prev.map(chat => 
-      chat.id === chatId 
-        ? { 
-            ...chat, 
-            messages: [...chat.messages, userMessage],
-            preview: content.length > 100 ? content.substring(0, 100) + '...' : content,
-            title: chat.title === 'New Chat' ? (content.length > 50 ? content.substring(0, 50) + '...' : content) : chat.title
-          }
-        : chat
-    ));
+    // Add user message to database and UI
+    try {
+      const userMessage = await addMessage(chatId, 'user', content);
+      
+      setChats(prev => prev.map(chat => 
+        chat.id === chatId 
+          ? { 
+              ...chat, 
+              messages: [...chat.messages, userMessage],
+              preview: content.length > 100 ? content.substring(0, 100) + '...' : content,
+              title: chat.title === 'New Chat' ? (content.length > 50 ? content.substring(0, 50) + '...' : content) : chat.title
+            }
+          : chat
+      ));
+      
+      // Update chat title and preview if it's a new chat
+      if (chats.find(chat => chat.id === chatId)?.title === 'New Chat') {
+        const title = content.length > 50 ? content.substring(0, 50) + '...' : content;
+        const preview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+        await updateChat(chatId, { title, preview });
+      }
+    } catch (error) {
+      console.error('Failed to add user message:', error);
+      return;
+    }
 
     // Get current chat with all messages for context
     const currentChatWithNewMessage = chats.find(chat => chat.id === chatId);
@@ -211,13 +215,9 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
     try {
       const response = await sendMessage(content, selectedModel, conversationHistory);
       
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: response,
-        timestamp: new Date()
-      };
-
+      // Add assistant message to database and UI
+      const assistantMessage = await addMessage(chatId, 'assistant', response);
+      
       setChats(prev => prev.map(chat => 
         chat.id === chatId 
           ? { ...chat, messages: [...chat.messages, assistantMessage] }
@@ -225,7 +225,6 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
       ));
     } catch (error) {
       console.error('Failed to send message:', error);
-      // You could add error handling UI here
     } finally {
       setIsLoading(false);
     }
@@ -235,6 +234,20 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
     setIsLoading(false);
   };
 
+  const handleSignIn = async (email: string, password: string) => {
+    await signIn(email, password);
+  };
+
+  const handleSignUp = async (email: string, password: string) => {
+    await signUp(email, password);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setChats([]);
+    setActiveChat(null);
+    setShowAuthModal(true);
+  };
   const currentChat = getCurrentChat();
 
   return (
@@ -246,6 +259,8 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         onRenameChat={handleRenameChat}
+        onSignOut={handleSignOut}
+        user={user}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
@@ -300,6 +315,16 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
           />
         </div>
       </div>
+      
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSignIn={handleSignIn}
+        onSignUp={handleSignUp}
+        isLoading={dbLoading}
+        error={dbError}
+      />
     </div>
   );
 }
