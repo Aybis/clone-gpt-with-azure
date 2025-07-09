@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onChatSelect,
   onNewChat,
   onDeleteChat,
-  onRenameChat
+  onRenameChat,
   isOpen,
   onClose
 }) => {
