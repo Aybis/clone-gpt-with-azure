@@ -4,6 +4,7 @@ import ChatArea from './components/ChatArea';
 import ChatInput from './components/ChatInput';
 import ModelSelector from './components/ModelSelector';
 import AuthModal from './components/AuthModal';
+import UpgradeModal from './components/UpgradeModal';
 import { Menu } from 'lucide-react';
 import { useAI } from './hooks/useAI';
 import { useDatabase } from './hooks/useDatabase';
