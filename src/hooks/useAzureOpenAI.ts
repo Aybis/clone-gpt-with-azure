@@ -41,11 +41,32 @@ export const useAzureOpenAI = () => {
     }
   }, [service, shouldUseMock]);
   const sendMessage = useCallback(async (
-    messages: ChatCompletionMessage[],
+    messages: ChatCompletionMessage[] | string,
+    conversationHistory?: ChatCompletionMessage[],
     onStreamChunk?: (content: string) => void
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);
+
+    // Convert string input to proper message format with context
+    let chatMessages: ChatCompletionMessage[];
+    
+    if (typeof messages === 'string') {
+      // Build conversation context
+      chatMessages = [
+        {
+          role: 'system',
+          content: 'You are a helpful AI assistant. You have access to the conversation history and should provide contextual responses that reference previous messages when relevant. Maintain conversation continuity and build upon previous topics discussed.'
+        },
+        ...(conversationHistory || []),
+        {
+          role: 'user',
+          content: messages
+        }
+      ];
+    } else {
+      chatMessages = messages;
+    }
 
     try {
       // Use mock service if in development and not configured
@@ -53,7 +74,7 @@ export const useAzureOpenAI = () => {
         if (onStreamChunk) {
           return new Promise((resolve, reject) => {
             mockAzureAPI.createChatCompletionStream(
-              { messages },
+              { messages: chatMessages },
               (chunk: StreamChunk) => {
                 const content = chunk.choices[0]?.delta?.content || '';
                 if (content) {
@@ -72,7 +93,7 @@ export const useAzureOpenAI = () => {
             );
           });
         } else {
-          const response = await mockAzureAPI.createChatCompletion({ messages });
+          const response = await mockAzureAPI.createChatCompletion({ messages: chatMessages });
           setIsLoading(false);
           return response.choices[0].message.content;
         }
@@ -89,7 +110,7 @@ export const useAzureOpenAI = () => {
         return new Promise((resolve, reject) => {
           service.createChatCompletionStream(
             {
-              messages,
+              messages: chatMessages,
               stream: true
             },
             (chunk: StreamChunk) => {
@@ -113,7 +134,7 @@ export const useAzureOpenAI = () => {
       } else {
         // Non-streaming response
         const response = await service.createChatCompletion({
-          messages
+          messages: chatMessages
         });
 
         setIsLoading(false);

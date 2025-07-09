@@ -11,14 +11,15 @@ interface Message {
 interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
+  chatId?: string;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, chatId]); // Re-scroll when chat changes
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
@@ -34,29 +35,29 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
             </span>
           </h1>
           <p className="text-base md:text-lg text-zinc-400 md:text-zinc-600 mb-12 md:mb-16 leading-relaxed">
-            I'm here to help with questions, creative projects, and more.
+            I'm here to help with questions, creative projects, and more. I'll remember our conversation context to provide better responses.
           </p>
           
           <div className="hidden md:grid grid-cols-2 gap-4 max-w-2xl mx-auto">
             <div className="group bg-white border border-zinc-300 p-4 md:p-6 rounded-2xl hover:border-zinc-400 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">💡</div>
               <h3 className="font-semibold text-zinc-900 mb-1 md:mb-2 text-base md:text-lg">Creative writing</h3>
-              <p className="text-sm md:text-base text-zinc-600">Help me write a story about...</p>
+              <p className="text-sm md:text-base text-zinc-600">Help me write a story about... (I'll remember the context)</p>
             </div>
             <div className="group bg-white border border-zinc-300 p-4 md:p-6 rounded-2xl hover:border-zinc-400 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">🔍</div>
               <h3 className="font-semibold text-zinc-900 mb-1 md:mb-2 text-base md:text-lg">Research</h3>
-              <p className="text-sm md:text-base text-zinc-600">Find information about...</p>
+              <p className="text-sm md:text-base text-zinc-600">Find information about... (with conversation memory)</p>
             </div>
             <div className="group bg-white border border-zinc-300 p-4 md:p-6 rounded-2xl hover:border-zinc-400 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">💻</div>
               <h3 className="font-semibold text-zinc-900 mb-1 md:mb-2 text-base md:text-lg">Code help</h3>
-              <p className="text-sm md:text-base text-zinc-600">Debug this code...</p>
+              <p className="text-sm md:text-base text-zinc-600">Debug this code... (I'll track our coding discussion)</p>
             </div>
             <div className="group bg-white border border-zinc-300 p-4 md:p-6 rounded-2xl hover:border-zinc-400 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">📚</div>
               <h3 className="font-semibold text-zinc-900 mb-1 md:mb-2 text-base md:text-lg">Learning</h3>
-              <p className="text-sm md:text-base text-zinc-600">Explain this concept...</p>
+              <p className="text-sm md:text-base text-zinc-600">Explain this concept... (with contextual follow-ups)</p>
             </div>
           </div>
         </div>

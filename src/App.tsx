@@ -183,14 +183,18 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
         : chat
     ));
 
-    // Simulate AI response with markdown
+    // Get current chat with all messages for context
+    const currentChatWithNewMessage = chats.find(chat => chat.id === chatId);
+    const allMessages = currentChatWithNewMessage ? [...currentChatWithNewMessage.messages, userMessage] : [userMessage];
+    
+    // Simulate AI response with context memory
     setIsLoading(true);
     
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: generateMarkdownResponse(content),
+        content: generateMarkdownResponse(content, allMessages),
         timestamp: new Date()
       };
 
@@ -204,18 +208,34 @@ return NextResponse.rewrite(new URL('/api/v2/users', request.url))
     }, 1500);
   };
 
-  const generateMarkdownResponse = (input: string): string => {
+  const generateMarkdownResponse = (input: string, conversationHistory: Message[]): string => {
     const lowerInput = input.toLowerCase();
     
+    // Extract context from conversation history
+    const previousMessages = conversationHistory.slice(0, -1); // Exclude current message
+    const hasContext = previousMessages.length > 0;
+    
+    // Check if this is a follow-up question
+    const followUpIndicators = ['what about', 'and', 'also', 'can you', 'how about', 'what if', 'but', 'however', 'tell me more', 'explain', 'elaborate'];
+    const isFollowUp = followUpIndicators.some(indicator => lowerInput.includes(indicator));
+    
+    // Get recent context (last 3 messages for better performance)
+    const recentContext = previousMessages.slice(-3);
+    const contextTopics = recentContext
+      .filter(msg => msg.type === 'user')
+      .map(msg => msg.content.toLowerCase())
+      .join(' ');
+    
     if (lowerInput.includes('code') || lowerInput.includes('programming')) {
-      return `# Code Help Response
-
-I'd be happy to help you with **${input}**!
-
-## Key Points:
+      const contextualIntro = hasContext && isFollowUp 
+        ? `# Following up on our coding discussion\n\nBuilding on what we discussed earlier about ${getMainTopic(contextTopics)}, let me address your question about **${input}**.\n\n`
+        : `# Code Help Response\n\nI'd be happy to help you with **${input}**!\n\n`;
+        
+      return `${contextualIntro}## Key Points:
 - Modern development practices emphasize clean, maintainable code
 - Component-based architecture makes applications more scalable
 - Testing and documentation are crucial for long-term success
+${hasContext ? '- Building on our previous discussion, here are additional considerations' : ''}
 
 ### Example Implementation:
 
@@ -236,23 +256,182 @@ const MyComponent = () => {
 };
 \`\`\`
 
-> **Pro tip:** Always follow established patterns and conventions in your field.
+${hasContext ? `> **Building on our conversation:** This approach complements what we discussed about ${getMainTopic(contextTopics)}.` : '> **Pro tip:** Always follow established patterns and conventions in your field.'}
 
-Would you like me to elaborate on any specific aspect?`;
+Would you like me to elaborate on any specific aspect${hasContext ? ' or continue with our previous discussion' : ''}?`;
     }
 
-    return `# Response to: "${input}"
+    // Handle follow-up questions with context
+    if (hasContext && isFollowUp) {
+      return `# Continuing our conversation
 
-I understand you're asking about **${input}**. This is an interesting topic!
+I see you're asking about **${input}** in relation to our previous discussion about ${getMainTopic(contextTopics)}.
 
-## Analysis:
+## Building on what we covered:
+
+### Previous Context:
+${recentContext.filter(msg => msg.type === 'user').map((msg, index) => 
+  `${index + 1}. You asked about: "${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}"`
+).join('\n')}
+
+### Now addressing: "${input}"
+
+This is a great follow-up question! Here's how it connects to our discussion:
+
+- **Relationship to previous topics**: This builds directly on the concepts we explored
+- **New insights**: ${input} adds another dimension to consider
+- **Practical implications**: This affects the approach we discussed earlier
+
+### Updated Recommendations:
+
+| Aspect | Previous Discussion | Current Question | Combined Approach |
+|--------|-------------------|------------------|-------------------|
+| Context | ${getMainTopic(contextTopics)} | ${input.substring(0, 30)}... | Integrated solution |
+| Approach | Foundation laid | Building upon it | Comprehensive strategy |
+| Next Steps | Initial direction | Refined focus | Clear action plan |
+
+> **Connecting the dots:** This question shows you're thinking deeply about the topic. The combination of ${getMainTopic(contextTopics)} and ${input} creates interesting possibilities.
+
+Would you like me to dive deeper into how these concepts work together, or do you have other related questions?`;
+    }
+
+    // Default response with context awareness
+    const contextualIntro = hasContext 
+      ? `# Response to: "${input}"\n\nI notice we've been discussing ${getMainTopic(contextTopics)}. Now you're asking about **${input}** - let me address this in context.\n\n`
+      : `# Response to: "${input}"\n\nI understand you're asking about **${input}**. This is an interesting topic!\n\n`;
+
+    return `${contextualIntro}## Analysis:
 
 ### Key Considerations:
 - Context and requirements are crucial for any solution
 - Best practices vary depending on your specific use case
 - It's important to consider both short-term and long-term implications
+${hasContext ? `- This relates to our earlier discussion about ${getMainTopic(contextTopics)}` : ''}
 
 ### Recommended Approach:
+
+1. **Research**: Gather information from reliable sources
+2. **Plan**: Create a structured approach to tackle the problem
+3. **Implement**: Start with a minimal viable solution
+4. **Iterate**: Refine based on feedback and results
+${hasContext ? '5. **Connect**: Consider how this integrates with our previous topics' : ''}
+
+### Additional Insights:
+
+| Aspect | Consideration |
+|--------|---------------|
+| Scalability | Think about future growth |
+| Maintainability | Code should be easy to update |
+| User Experience | Always consider the end user |
+${hasContext ? `| Context Integration | How this fits with ${getMainTopic(contextTopics)} |` : ''}
+
+> **Remember:** ${hasContext ? `Building on our conversation about ${getMainTopic(contextTopics)}, don't forget about` : 'Don\'t forget about'} accessibility and performance optimization.
+
+**Would you like me to dive deeper into any particular aspect${hasContext ? ' or explore how this connects to our previous discussion' : ''}?**`;
+  };
+
+  // Helper function to extract main topic from context
+  const getMainTopic = (contextText: string): string => {
+    const topics = {
+      'react': 'React development',
+      'javascript': 'JavaScript programming', 
+      'code': 'coding practices',
+      'api': 'API development',
+      'database': 'database design',
+      'ui': 'user interface design',
+      'css': 'CSS styling',
+      'typescript': 'TypeScript development',
+      'azure': 'Azure services',
+      'ai': 'artificial intelligence',
+      'machine learning': 'machine learning',
+      'deployment': 'application deployment',
+      'testing': 'software testing',
+      'performance': 'performance optimization'
+    }
+
+    for (const [keyword, topic] of Object.entries(topics)) {
+      if (contextText.includes(keyword)) {
+        return topic;
+      }
+    }
+    
+    return 'our previous topics';
+  };
+
+  const handleStopGeneration = () => {
+    setIsLoading(false);
+  };
+
+  const currentChat = getCurrentChat();
+
+  return (
+    <div className="flex h-screen bg-zinc-800 md:bg-zinc-100">
+      <Sidebar
+        chats={chats}
+        activeChat={activeChat}
+        onChatSelect={handleChatSelect}
+        onNewChat={handleNewChat}
+        onDeleteChat={handleDeleteChat}
+        onRenameChat={handleRenameChat}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+      
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Header with Model Selector */}
+        <div className="bg-zinc-800 border-b border-zinc-700 p-3 flex-shrink-0">
+          <div className={`max-w-4xl mx-auto flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between lg:justify-center'}`}>
+            {/* Mobile Menu Button */}
+            <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'absolute left-4' : ''}`}>
+              {isSidebarCollapsed && (
+                <button
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  className="hidden lg:block p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
+                >
+                  <Menu size={20} />
+                </button>
+              )}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
+            
+            {/* Model Selector */}
+            <ModelSelector 
+              selectedModel={selectedModel} 
+              onModelSelect={setSelectedModel} 
+            />
+            
+            {/* Spacer for mobile to center the model selector */}
+            <div className={`lg:hidden w-10 ${isSidebarCollapsed ? 'hidden' : ''}`}></div>
+          </div>
+        </div>
+        
+        <div className="flex-1 min-h-0">
+          <ChatArea
+            messages={currentChat?.messages || []}
+            isLoading={isLoading}
+          />
+        </div>
+        
+        <div className="flex-shrink-0">
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            onStopGeneration={handleStopGeneration}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
 
 1. **Research**: Gather information from reliable sources
 2. **Plan**: Create a structured approach to tackle the problem
