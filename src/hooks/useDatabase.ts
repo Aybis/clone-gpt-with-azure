@@ -129,8 +129,7 @@ export const useDatabase = () => {
     try {
       const dbChat = await ChatService.updateChat(chatId, updates);
       return convertDatabaseChatToAppChat(dbChat);
-      const updatedChat = await ChatService.updateChat(chatId, updates);
-      return updatedChat;
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update chat';
       setError(errorMessage);
       throw new Error(errorMessage);
