@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Provider Status */}
-      <div className="border-b border-zinc-300">
+      <div className="p-4 border-b border-zinc-300">
         <ProviderStatus />
       </div>
 
@@ -219,7 +219,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Provider Status */}
-      <div className="border-b border-zinc-700">
+      <div className="p-3 border-b border-zinc-700">
         <ProviderStatus />
       </div>
 

@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useAI } from '../hooks/useAI';
+import ProviderSelector from './ProviderSelector';
 import { CheckCircle, XCircle, AlertCircle, Settings, Loader } from 'lucide-react';
 
 const ProviderStatus: React.FC = () => {
-  const { testConnection, getServiceInfo, isConnected, isMockMode, isConfigured, providerInfo } = useAI();
+  const { 
+    testConnection, 
+    getServiceInfo, 
+    isConnected, 
+    isMockMode, 
+    isConfigured, 
+    providerInfo,
+    currentProvider,
+    changeProvider
+  } = useAI();
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -65,10 +75,19 @@ const ProviderStatus: React.FC = () => {
   };
 
   return (
-    <div className="p-4 border-b border-zinc-300">
+    <div>
+      {/* Provider Selector */}
+      <div className="mb-4">
+        <ProviderSelector
+          currentProvider={currentProvider}
+          onProviderChange={changeProvider}
+          isConfigured={isConfigured}
+        />
+      </div>
+      
+      {/* Connection Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{providerInfo.icon}</span>
           {getStatusIcon()}
           <span className="text-sm font-medium text-zinc-700">
             {getStatusText()}

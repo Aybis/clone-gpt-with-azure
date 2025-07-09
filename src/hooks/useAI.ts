@@ -1,22 +1,38 @@
 import { useState, useCallback, useMemo } from 'react';
-import { createAIService, BaseAIServices } from '../services/ai-service';
+import { createAIService, BaseAIService } from '../services/ai-service';
 import { getAIConfig, getCurrentProvider, isProviderConfigured, getProviderInfo } from '../config/ai-providers';
-import { ChatMessage, StreamChunk } from '../types/ai-providers';
+import { ChatMessage, StreamChunk, AIProvider } from '../types/ai-providers';
 import { mockAzureAPI } from '../utils/mockAzureAPI';
 
 export const useAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>(getCurrentProvider());
   
-  const currentProvider = getCurrentProvider();
-  const isConfigured = isProviderConfigured();
+  const currentProvider = selectedProvider;
+  const isConfigured = useMemo(() => {
+    // Check if the selected provider is configured
+    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
+    // Temporarily override the provider to check configuration
+    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
+    const configured = isProviderConfigured();
+    // Restore original provider
+    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
+    return configured;
+  }, [currentProvider]);
+  
   const shouldUseMock = !isConfigured;
   
-  const service = useMemo((): BaseAIServices | null => {
+  const service = useMemo((): BaseAIService | null => {
     if (shouldUseMock) return null;
     
+    // Get config for the selected provider
+    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
+    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
     const config = getAIConfig();
+    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
+    
     if (!config) return null;
     
     try {
@@ -25,7 +41,7 @@ export const useAI = () => {
       console.error('Failed to create AI service:', error);
       return null;
     }
-  }, [shouldUseMock]);
+  }, [shouldUseMock, currentProvider]);
 
   // Test connection to AI service
   const testConnection = useCallback(async (): Promise<boolean> => {
@@ -239,5 +255,10 @@ export const useAI = () => {
     currentProvider,
     providerInfo: getProviderInfo(currentProvider),
     clearError: () => setError(null)
+    changeProvider: (provider: AIProvider) => {
+      setSelectedProvider(provider);
+      setIsConnected(null);
+      setError(null);
+    }
   };
 };

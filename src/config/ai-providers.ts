@@ -1,5 +1,10 @@
 import { AIConfig, AIModel, AIProvider } from '../types/ai-providers';
 
+// Get all available providers
+export const getAllProviders = (): AIProvider[] => {
+  return ['azure', 'openai', 'gemini'];
+};
+
 // Get current AI provider from environment
 export const getCurrentProvider = (): AIProvider => {
   const provider = import.meta.env.VITE_AI_PROVIDER as AIProvider;
