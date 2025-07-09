@@ -26,7 +26,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-white">
+      <div className="h-full flex items-center justify-center p-4 md:p-12 bg-gray-900 md:bg-gray-50">
         <div className="text-center max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-normal mb-6 md:mb-8 leading-tight">
             <span className="text-white md:text-gray-800">
@@ -38,22 +38,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
           </p>
           
           <div className="hidden md:grid grid-cols-2 gap-4 max-w-2xl mx-auto">
-            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">💡</div>
               <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Creative writing</h3>
               <p className="text-sm md:text-base text-gray-600">Help me write a story about...</p>
             </div>
-            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">🔍</div>
               <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Research</h3>
               <p className="text-sm md:text-base text-gray-600">Find information about...</p>
             </div>
-            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">💻</div>
               <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Code help</h3>
               <p className="text-sm md:text-base text-gray-600">Debug this code...</p>
             </div>
-            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+            <div className="group bg-white border border-gray-200 p-4 md:p-6 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all cursor-pointer">
               <div className="text-xl md:text-2xl mb-2 md:mb-3">📚</div>
               <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Learning</h3>
               <p className="text-sm md:text-base text-gray-600">Explain this concept...</p>
@@ -65,7 +65,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading }) => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-900 md:bg-white">
+    <div className="h-full overflow-y-auto bg-gray-900 md:bg-gray-50">
       <div className="max-w-4xl mx-auto">
         {messages.map((message) => (
           <ChatMessage

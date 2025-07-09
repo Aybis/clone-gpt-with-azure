@@ -18,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onCopy }) => {
   const isUser = message.type === 'user';
 
   return (
-    <div className={`group flex gap-3 md:gap-6 p-4 md:p-8 border-b border-gray-800 md:border-gray-100 hover:bg-gray-800/50 md:hover:bg-gray-50/50 transition-colors`}>
+    <div className={`group flex gap-3 md:gap-6 p-4 md:p-8 ${!isUser ? 'bg-white md:bg-white' : 'bg-gray-900 md:bg-gray-50'} border-b border-gray-800 md:border-gray-200 hover:bg-gray-800/50 md:hover:bg-gray-50 transition-colors`}>
       <div className="flex-shrink-0">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
           isUser 

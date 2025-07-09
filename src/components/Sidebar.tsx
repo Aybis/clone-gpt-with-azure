@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar */}
       <div className={`
         fixed lg:relative inset-y-0 left-0 z-50 lg:z-0
-        w-80 bg-white h-screen flex flex-col border-r border-gray-200
+        w-80 bg-white h-screen flex flex-col border-r border-gray-200 shadow-sm
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
