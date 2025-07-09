@@ -278,7 +278,7 @@ I understand you're asking about **${input}**. This is an interesting topic!
   const currentChat = getCurrentChat();
 
   return (
-    <div className="flex h-screen bg-gray-900 md:bg-white">
+    <div className="flex h-screen bg-zinc-800 md:bg-zinc-100">
       <Sidebar
         chats={chats}
         activeChat={activeChat}
@@ -292,12 +292,12 @@ I understand you're asking about **${input}**. This is an interesting topic!
       
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header with Model Selector */}
-        <div className="bg-gray-900 border-b border-gray-800 p-3 flex-shrink-0">
+        <div className="bg-zinc-800 border-b border-zinc-700 p-3 flex-shrink-0">
           <div className="max-w-4xl mx-auto flex items-center justify-between lg:justify-center">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-white hover:bg-zinc-700 rounded-lg transition-colors"
             >
               <Menu size={20} />
             </button>

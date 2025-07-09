@@ -61,9 +61,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+          <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-zinc-300 z-50 overflow-hidden">
             <div className="p-1">
-              <div className="px-3 py-2 text-xs text-gray-500 font-medium flex items-center gap-2 border-b border-gray-100">
+              <div className="px-3 py-2 text-xs text-zinc-500 font-medium flex items-center gap-2 border-b border-zinc-200">
                 <Info size={12} />
                 Models
               </div>
@@ -74,13 +74,13 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
                     onModelSelect(model.id);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${
-                    selectedModel === model.id ? 'bg-gray-50' : ''
+                  className={`w-full flex items-start gap-3 p-3 hover:bg-zinc-50 transition-colors text-left ${
+                    selectedModel === model.id ? 'bg-zinc-50' : ''
                   }`}
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-gray-900">{model.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{model.subtitle}</div>
+                    <div className="font-medium text-sm text-zinc-900">{model.name}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">{model.subtitle}</div>
                   </div>
                   {selectedModel === model.id && (
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
@@ -88,10 +88,10 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
                 </button>
               ))}
             </div>
-            <div className="border-t border-gray-100 p-1">
-              <button className="w-full flex items-center gap-2 p-3 hover:bg-gray-50 transition-colors text-left">
-                <span className="text-sm text-gray-700">More models</span>
-                <ChevronDown size={12} className="text-gray-400 ml-auto" />
+            <div className="border-t border-zinc-200 p-1">
+              <button className="w-full flex items-center gap-2 p-3 hover:bg-zinc-50 transition-colors text-left">
+                <span className="text-sm text-zinc-700">More models</span>
+                <ChevronDown size={12} className="text-zinc-400 ml-auto" />
               </button>
             </div>
           </div>
