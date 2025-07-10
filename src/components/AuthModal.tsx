@@ -3,11 +3,12 @@ import { X, Mail, Lock, User } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onSignIn: (email: string, password: string) => Promise<void>;
   onSignUp: (email: string, password: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
+  onClearError?: () => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({
@@ -16,11 +17,19 @@ const AuthModal: React.FC<AuthModalProps> = ({
   onSignIn,
   onSignUp,
   isLoading,
-  error
+  error,
+  onClearError
 }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Clear error when switching between sign in/up
+  useEffect(() => {
+    if (onClearError) {
+      onClearError();
+    }
+  }, [isSignUp, onClearError]);
 
   if (!isOpen) return null;
 
@@ -35,7 +44,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       } else {
         await onSignIn(email, password);
       }
-      onClose();
+      // Don't close here - let the parent handle it after successful auth
     } catch (err) {
       // Error is handled by the parent component
     }
@@ -47,14 +56,16 @@ const AuthModal: React.FC<AuthModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-zinc-200">
           <h2 className="text-xl font-semibold text-zinc-900">
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h2>
-          <button
+          {onClose && (
+            <button
             onClick={onClose}
             className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
           >
             <X size={20} className="text-zinc-500" />
           </button>
+          )}
         </div>
 
         {/* Form */}
@@ -108,6 +119,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading || !email.trim() || !password.trim()}
+            disabled={isLoading}
             className="w-full mt-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
@@ -141,8 +153,15 @@ const AuthModal: React.FC<AuthModalProps> = ({
             <div className="flex items-start gap-3">
               <User size={16} className="text-zinc-500 mt-0.5" />
               <div className="text-sm text-zinc-600">
-                <p className="font-medium mb-1">Your data is secure</p>
-                <p>All chats are stored securely and only accessible to you.</p>
+                <p className="font-medium mb-1">
+                  {isSignUp ? 'Join thousands of users' : 'Welcome back!'}
+                </p>
+                <p>
+                  {isSignUp 
+                    ? 'Create your account to start chatting with AI and save your conversations.'
+                    : 'Sign in to access your saved conversations and continue where you left off.'
+                  }
+                </p>
               </div>
             </div>
           </div>

@@ -32,6 +32,8 @@ export const useDatabase = () => {
           setSubscription(sub);
         } catch (err) {
           console.error('Failed to load subscription:', err);
+          // Set default subscription for mock mode
+          setSubscription({ plan: 'free', chat_limit: 999, current_count: 0 });
         }
       }
     }).catch((err) => {
@@ -51,7 +53,7 @@ export const useDatabase = () => {
             setSubscription(sub);
           } catch (err) {
             console.error('Failed to load subscription:', err);
-            setSubscription(null);
+            setSubscription({ plan: 'free', chat_limit: 999, current_count: 0 });
           }
         } else {
           setSubscription(null);
@@ -86,7 +88,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Load specific chat with messages
   const loadChatWithMessages = useCallback(async (chatId: string) => {
@@ -105,7 +107,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Create new chat
   const createChat = useCallback(async (title: string, preview: string = '') => {
@@ -116,8 +118,12 @@ export const useDatabase = () => {
       const dbChat = await chatService.createChat(title, preview);
       
       // Refresh subscription info after creating chat
-      const updatedSub = await subscriptionService.getUserSubscription();
-      setSubscription(updatedSub);
+      try {
+        const updatedSub = await subscriptionService.getUserSubscription();
+        setSubscription(updatedSub);
+      } catch (err) {
+        console.warn('Failed to refresh subscription:', err);
+      }
       
       return convertDatabaseChatToAppChat(dbChat);
     } catch (err) {
@@ -127,7 +133,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Update chat
   const updateChat = useCallback(async (chatId: string, updates: { title?: string; preview?: string }) => {
@@ -144,7 +150,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Delete chat
   const deleteChat = useCallback(async (chatId: string) => {
@@ -155,8 +161,12 @@ export const useDatabase = () => {
       await chatService.deleteChat(chatId);
       
       // Refresh subscription info after deleting chat
-      const updatedSub = await subscriptionService.getUserSubscription();
-      setSubscription(updatedSub);
+      try {
+        const updatedSub = await subscriptionService.getUserSubscription();
+        setSubscription(updatedSub);
+      } catch (err) {
+        console.warn('Failed to refresh subscription:', err);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete chat';
       setError(errorMessage);
@@ -164,7 +174,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Add message to chat
   const addMessage = useCallback(async (chatId: string, role: 'user' | 'assistant', content: string) => {
@@ -186,7 +196,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Search chats
   const searchChats = useCallback(async (query: string) => {
@@ -203,7 +213,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Authentication methods
   const signIn = useCallback(async (email: string, password: string) => {
@@ -212,6 +222,9 @@ export const useDatabase = () => {
 
     try {
       const result = await authService.signIn(email, password);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';
@@ -228,6 +241,9 @@ export const useDatabase = () => {
 
     try {
       const result = await authService.signUp(email, password);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
@@ -244,6 +260,8 @@ export const useDatabase = () => {
 
     try {
       await authService.signOut();
+      setUser(null);
+      setSubscription(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign out';
       setError(errorMessage);
@@ -269,7 +287,7 @@ export const useDatabase = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   return {
     // State

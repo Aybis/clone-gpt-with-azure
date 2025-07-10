@@ -79,7 +79,7 @@ function App() {
 
   // Show auth modal if not authenticated and trying to use the app
   useEffect(() => {
-    if (!isAuthenticated && !showAuthModal && chats.length === 0 && user === null) {
+    if (!isAuthenticated && !showAuthModal) {
       setShowAuthModal(true);
     }
   }, [isAuthenticated, showAuthModal]);
@@ -96,7 +96,7 @@ function App() {
   };
 
   const handleNewChat = async () => {
-    if (!isAuthenticated && user === null) {
+    if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
@@ -121,7 +121,7 @@ function App() {
   };
 
   const handleChatSelect = async (chatId: string) => {
-    if (!isAuthenticated && user === null) {
+    if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
@@ -180,7 +180,7 @@ function App() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!isAuthenticated && user === null) {
+    if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
@@ -289,11 +289,21 @@ function App() {
   };
 
   const handleSignIn = async (email: string, password: string) => {
-    await signIn(email, password);
+    try {
+      await signIn(email, password);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    }
   };
 
   const handleSignUp = async (email: string, password: string) => {
-    await signUp(email, password);
+    try {
+      await signUp(email, password);
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error('Sign up failed:', error);
+    }
   };
 
   const handleSignOut = async () => {
@@ -301,7 +311,6 @@ function App() {
     setChats([]);
     setActiveChat(null);
     setStreamingMessage('');
-    setShowAuthModal(true);
   };
 
   const handleUpgrade = async () => {
@@ -388,11 +397,16 @@ function App() {
       {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => {
+          if (isAuthenticated) {
+            setShowAuthModal(false);
+          }
+        }}
         onSignIn={handleSignIn}
         onSignUp={handleSignUp}
         isLoading={dbLoading}
         error={dbError}
+        onClearError={clearError}
       />
       
       {/* Upgrade Modal */}
