@@ -258,18 +258,23 @@ export const useAI = () => {
   }, [getModels, currentProvider]);
 
   // Auto-detect provider based on selected model
-  const handleModelChange = useCallback((modelId: string) => {
+  const handleModelChange = useCallback(async (modelId: string) => {
     // Find which provider this model belongs to
-    const allModels = getAllModels();
-    const selectedModel = allModels.find(m => m.id === modelId);
+    try {
+      const allModels = await getAllModels();
+      const selectedModel = allModels.find(m => m.id === modelId);
     
-    if (selectedModel && selectedModel.provider !== currentProvider) {
-      console.log('Switching provider from', currentProvider, 'to', selectedModel.provider);
-      setSelectedProvider(selectedModel.provider);
-      setIsConnected(null); // Reset connection status
-      setError(null); // Clear any previous errors
+      if (selectedModel && selectedModel.provider !== currentProvider) {
+        console.log('Switching provider from', currentProvider, 'to', selectedModel.provider);
+        setSelectedProvider(selectedModel.provider);
+        setIsConnected(null); // Reset connection status
+        setError(null); // Clear any previous errors
+      }
+    } catch (error) {
+      console.error('Error handling model change:', error);
+      setError('Failed to switch model');
     }
-  }, [currentProvider]);
+  }, [currentProvider, getAllModels]);
 
   return {
     sendMessage,

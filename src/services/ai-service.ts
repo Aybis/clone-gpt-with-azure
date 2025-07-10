@@ -304,6 +304,11 @@ export class GeminiService extends BaseAIService {
     
     const geminiRequest = this.convertMessagesToGemini(request.messages);
     
+    // Validate model name for Gemini
+    if (!request.model || !request.model.startsWith('gemini-')) {
+      throw new Error(`Invalid Gemini model: ${request.model}`);
+    }
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -317,7 +322,13 @@ export class GeminiService extends BaseAIService {
       }),
     });
 
-    const data = await this.handleResponse<any>(response);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API Error:', errorText);
+      throw new Error(`Gemini API failed: ${response.status} ${response.statusText}. ${errorText}`);
+    }
+    
+    const data = await response.json();
     
     // Convert Gemini response to standard format
     return {
@@ -353,6 +364,11 @@ export class GeminiService extends BaseAIService {
     const geminiRequest = this.convertMessagesToGemini(request.messages);
     
     try {
+      // Validate model name for Gemini
+      if (!request.model || !request.model.startsWith('gemini-')) {
+        throw new Error(`Invalid Gemini model: ${request.model}`);
+      }
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -366,7 +382,9 @@ export class GeminiService extends BaseAIService {
       });
 
       if (!response.ok) {
-        throw new Error(`Stream failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Gemini API Error:', errorText);
+        throw new Error(`Gemini API failed: ${response.status} ${response.statusText}. ${errorText}`);
       }
 
       const reader = response.body?.getReader();
