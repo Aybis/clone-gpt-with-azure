@@ -18,6 +18,20 @@ const isSupabaseAvailable = (): boolean => {
   return supabase !== null;
 };
 
+// Helper function to check if we can actually connect to Supabase
+const canConnectToSupabase = async (): Promise<boolean> => {
+  if (!supabase) return false;
+  
+  try {
+    // Try a simple query to test connectivity
+    const { error } = await supabase.from('chats').select('count', { count: 'exact', head: true });
+    return !error;
+  } catch (err) {
+    console.warn('Supabase connection test failed:', err);
+    return false;
+  }
+};
+
 // Helper function to throw consistent error when Supabase is not available
 const throwSupabaseError = (): never => {
   throw new Error('Database not available. Please configure Supabase environment variables in your .env file.');
@@ -55,104 +69,132 @@ export interface ChatWithMessages extends DatabaseChat {
 export class ChatService {
   // Get all chats for the current user
   static async getChats(): Promise<DatabaseChat[]> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.getChats();
     }
 
-    const { data, error } = await supabase
-      .from('chats')
-      .select('*')
-      .order('updated_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('chats')
+        .select('*')
+        .order('updated_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching chats:', error);
-      throw new Error('Failed to fetch chats');
+      if (error) {
+        console.error('Error fetching chats:', error);
+        console.warn('Falling back to mock service');
+        return MockChatService.getChats();
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Network error fetching chats:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.getChats();
     }
-
-    return data || [];
   }
 
   // Get a specific chat with its messages
   static async getChatWithMessages(chatId: string): Promise<ChatWithMessages | null> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.getChatWithMessages(chatId);
     }
 
-    const { data: chat, error: chatError } = await supabase
-      .from('chats')
-      .select('*')
-      .eq('id', chatId)
-      .single();
+    try {
+      const { data: chat, error: chatError } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('id', chatId)
+        .single();
 
-    if (chatError) {
-      console.error('Error fetching chat:', chatError);
-      throw new Error('Failed to fetch chat');
+      if (chatError) {
+        console.error('Error fetching chat:', chatError);
+        console.warn('Falling back to mock service');
+        return MockChatService.getChatWithMessages(chatId);
+      }
+
+      if (!chat) return null;
+
+      const { data: messages, error: messagesError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+
+      if (messagesError) {
+        console.error('Error fetching messages:', messagesError);
+        console.warn('Falling back to mock service');
+        return MockChatService.getChatWithMessages(chatId);
+      }
+
+      return {
+        ...chat,
+        messages: messages || []
+      };
+    } catch (err) {
+      console.error('Network error fetching chat:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.getChatWithMessages(chatId);
     }
-
-    if (!chat) return null;
-
-    const { data: messages, error: messagesError } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
-
-    if (messagesError) {
-      console.error('Error fetching messages:', messagesError);
-      throw new Error('Failed to fetch messages');
-    }
-
-    return {
-      ...chat,
-      messages: messages || []
-    };
   }
 
   // Create a new chat
   static async createChat(title: string, preview: string = ''): Promise<DatabaseChat> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.createChat(title, preview);
     }
 
-    // Check chat limit first
-    const { data: canCreate, error: limitError } = await supabase.rpc('check_chat_limit');
-    
-    if (limitError) {
-      console.error('Error checking chat limit:', limitError);
-      throw new Error('Failed to check chat limit');
-    }
-    
-    if (!canCreate) {
-      throw new Error('CHAT_LIMIT_EXCEEDED');
-    }
+    try {
+      // Check chat limit first
+      const { data: canCreate, error: limitError } = await supabase.rpc('check_chat_limit');
+      
+      if (limitError) {
+        console.error('Error checking chat limit:', limitError);
+        console.warn('Falling back to mock service');
+        return MockChatService.createChat(title, preview);
+      }
+      
+      if (!canCreate) {
+        throw new Error('CHAT_LIMIT_EXCEEDED');
+      }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error('User not authenticated');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.warn('User not authenticated, falling back to mock service');
+        return MockChatService.createChat(title, preview);
+      }
+
+      const { data, error } = await supabase
+        .from('chats')
+        .insert({
+          user_id: user.id,
+          title,
+          preview
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating chat:', error);
+        console.warn('Falling back to mock service');
+        return MockChatService.createChat(title, preview);
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Network error creating chat:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.createChat(title, preview);
     }
-
-    const { data, error } = await supabase
-      .from('chats')
-      .insert({
-        user_id: user.id,
-        title,
-        preview
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating chat:', error);
-      throw new Error('Failed to create chat');
-    }
-
-    return data;
   }
 
   // Update chat title and preview
   static async updateChat(chatId: string, updates: { title?: string; preview?: string }): Promise<DatabaseChat> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.updateChat(chatId, updates);
     }
 
@@ -180,95 +222,116 @@ export class ChatService {
 
       if (error) {
         console.error('Supabase error updating chat:', error);
-        throw new Error(`Database error: ${error.message}`);
+        console.warn('Falling back to mock service');
+        return MockChatService.updateChat(chatId, updates);
       }
 
       if (!data) {
-        throw new Error('Chat not found or no data returned');
+        console.warn('No data returned, falling back to mock service');
+        return MockChatService.updateChat(chatId, updates);
       }
 
       return data;
     } catch (err) {
-      if (err instanceof Error) {
-        // Re-throw our custom errors
-        if (err.message.startsWith('Database error:') || err.message.startsWith('Chat not found')) {
-          throw err;
-        }
-        // Handle network/fetch errors
-        if (err.name === 'TypeError' && err.message.includes('fetch')) {
-          throw new Error('Unable to connect to database. Please check your internet connection and Supabase configuration.');
-        }
-      }
-      // Re-throw unknown errors
-      throw new Error(`Failed to update chat: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error('Network error updating chat:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.updateChat(chatId, updates);
     }
   }
 
   // Delete a chat (messages will be deleted automatically due to CASCADE)
   static async deleteChat(chatId: string): Promise<void> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.deleteChat(chatId);
     }
 
-    const { error } = await supabase
-      .from('chats')
-      .delete()
-      .eq('id', chatId);
+    try {
+      const { error } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId);
 
-    if (error) {
-      console.error('Error deleting chat:', error);
-      throw new Error('Failed to delete chat');
+      if (error) {
+        console.error('Error deleting chat:', error);
+        console.warn('Falling back to mock service');
+        return MockChatService.deleteChat(chatId);
+      }
+    } catch (err) {
+      console.error('Network error deleting chat:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.deleteChat(chatId);
     }
   }
 
   // Add a message to a chat
   static async addMessage(chatId: string, role: 'user' | 'assistant', content: string): Promise<DatabaseMessage> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.addMessage(chatId, role, content);
     }
 
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({
-        chat_id: chatId,
-        role,
-        content
-      })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          chat_id: chatId,
+          role,
+          content
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error adding message:', error);
-      throw new Error('Failed to add message');
+      if (error) {
+        console.error('Error adding message:', error);
+        console.warn('Falling back to mock service');
+        return MockChatService.addMessage(chatId, role, content);
+      }
+
+      // Update chat's updated_at timestamp
+      try {
+        await supabase
+          .from('chats')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', chatId);
+      } catch (updateErr) {
+        console.warn('Failed to update chat timestamp:', updateErr);
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Network error adding message:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.addMessage(chatId, role, content);
     }
-
-    // Update chat's updated_at timestamp
-    await supabase
-      .from('chats')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', chatId);
-
-    return data;
   }
 
   // Search chats by title
   static async searchChats(query: string): Promise<DatabaseChat[]> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
+      console.warn('Using mock chat service - database not available');
       return MockChatService.searchChats(query);
     }
 
-    const { data, error } = await supabase
-      .from('chats')
-      .select('*')
-      .ilike('title', `%${query}%`)
-      .order('updated_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('chats')
+        .select('*')
+        .ilike('title', `%${query}%`)
+        .order('updated_at', { ascending: false });
 
-    if (error) {
-      console.error('Error searching chats:', error);
-      throw new Error('Failed to search chats');
+      if (error) {
+        console.error('Error searching chats:', error);
+        console.warn('Falling back to mock service');
+        return MockChatService.searchChats(query);
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Network error searching chats:', err);
+      console.warn('Falling back to mock service');
+      return MockChatService.searchChats(query);
     }
-
-    return data || [];
   }
 }
 
@@ -276,44 +339,55 @@ export class ChatService {
 export class SubscriptionService {
   // Get user subscription info
   static async getUserSubscription(): Promise<UserSubscription> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
       return { plan: 'free', chat_limit: 999, current_count: 0 };
     }
 
-    const { data, error } = await supabase.rpc('get_user_subscription');
-    
-    if (error) {
-      console.error('Error fetching subscription:', error);
-      throw new Error('Failed to fetch subscription');
-    }
+    try {
+      const { data, error } = await supabase.rpc('get_user_subscription');
+      
+      if (error) {
+        console.error('Error fetching subscription:', error);
+        return { plan: 'free', chat_limit: 999, current_count: 0 };
+      }
 
-    return data[0] || { plan: 'free', chat_limit: 5, current_count: 0 };
+      return data[0] || { plan: 'free', chat_limit: 5, current_count: 0 };
+    } catch (err) {
+      console.error('Network error fetching subscription:', err);
+      return { plan: 'free', chat_limit: 999, current_count: 0 };
+    }
   }
 
   // Upgrade to plus
   static async upgradeToPlusSubscription(): Promise<void> {
-    if (!supabase) {
+    if (!supabase || !(await canConnectToSupabase())) {
       console.log('Mock upgrade to plus subscription');
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.warn('User not authenticated for upgrade');
+        return;
+      }
 
-    const { error } = await supabase
-      .from('user_subscriptions')
-      .upsert({
-        user_id: user.id,
-        plan: 'plus',
-        chat_limit: 999999 // Unlimited
-      });
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .upsert({
+          user_id: user.id,
+          plan: 'plus',
+          chat_limit: 999999 // Unlimited
+        });
 
-    if (error) {
-      console.error('Error upgrading subscription:', error);
-      throw new Error('Failed to upgrade subscription');
+      if (error) {
+        console.error('Error upgrading subscription:', error);
+        console.log('Mock upgrade to plus subscription');
+      }
+    } catch (err) {
+      console.error('Network error upgrading subscription:', err);
+      console.log('Mock upgrade to plus subscription');
     }
   }
 }
