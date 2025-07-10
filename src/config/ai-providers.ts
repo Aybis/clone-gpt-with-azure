@@ -107,14 +107,14 @@ export const getAvailableModels = (provider: AIProvider): AIModel[] => {
 
     case 'openai':
       return [
-        {
-          id: 'gpt-4o',
-          name: 'GPT-4o',
-          description: 'Most advanced model with multimodal capabilities',
-          provider: 'openai',
-          maxTokens: 128000,
-          costPer1kTokens: 0.005
-        },
+        // {
+        //   id: 'gpt-4o',
+        //   name: 'GPT-4o',
+        //   description: 'Most advanced model with multimodal capabilities',
+        //   provider: 'openai',
+        //   maxTokens: 128000,
+        //   costPer1kTokens: 0.005
+        // },
         {
           id: 'gpt-4o-mini',
           name: 'GPT-4o Mini',
@@ -123,22 +123,22 @@ export const getAvailableModels = (provider: AIProvider): AIModel[] => {
           maxTokens: 128000,
           costPer1kTokens: 0.00015
         },
-        {
-          id: 'gpt-4-turbo',
-          name: 'GPT-4 Turbo',
-          description: 'Latest GPT-4 model with improved performance',
-          provider: 'openai',
-          maxTokens: 128000,
-          costPer1kTokens: 0.01
-        },
-        {
-          id: 'gpt-3.5-turbo',
-          name: 'GPT-3.5 Turbo',
-          description: 'Fast and efficient for most tasks',
-          provider: 'openai',
-          maxTokens: 16385,
-          costPer1kTokens: 0.0005
-        }
+        // {
+        //   id: 'gpt-4-turbo',
+        //   name: 'GPT-4 Turbo',
+        //   description: 'Latest GPT-4 model with improved performance',
+        //   provider: 'openai',
+        //   maxTokens: 128000,
+        //   costPer1kTokens: 0.01
+        // },
+        // {
+        //   id: 'gpt-3.5-turbo',
+        //   name: 'GPT-3.5 Turbo',
+        //   description: 'Fast and efficient for most tasks',
+        //   provider: 'openai',
+        //   maxTokens: 16385,
+        //   costPer1kTokens: 0.0005
+        // }
       ];
 
     case 'gemini':
@@ -151,22 +151,22 @@ export const getAvailableModels = (provider: AIProvider): AIModel[] => {
           maxTokens: 2097152,
           costPer1kTokens: 0.00125
         },
-        {
-          id: 'gemini-1.5-flash',
-          name: 'Gemini 1.5 Flash',
-          description: 'Fast and efficient Gemini model',
-          provider: 'gemini',
-          maxTokens: 1048576,
-          costPer1kTokens: 0.000075
-        },
-        {
-          id: 'gemini-1.0-pro',
-          name: 'Gemini 1.0 Pro',
-          description: 'Balanced performance and efficiency',
-          provider: 'gemini',
-          maxTokens: 32768,
-          costPer1kTokens: 0.0005
-        }
+        // {
+        //   id: 'gemini-1.5-flash',
+        //   name: 'Gemini 1.5 Flash',
+        //   description: 'Fast and efficient Gemini model',
+        //   provider: 'gemini',
+        //   maxTokens: 1048576,
+        //   costPer1kTokens: 0.000075
+        // },
+        // {
+        //   id: 'gemini-1.0-pro',
+        //   name: 'Gemini 1.0 Pro',
+        //   description: 'Balanced performance and efficiency',
+        //   provider: 'gemini',
+        //   maxTokens: 32768,
+        //   costPer1kTokens: 0.0005
+        // }
       ];
 
     default:
