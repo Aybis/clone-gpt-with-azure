@@ -252,7 +252,7 @@ export const getSpecificProviderConfig = (provider: AIProvider): AIConfig | null
       const geminiConfig = {
         provider: 'gemini' as const,
         apiKey: import.meta.env.VITE_GEMINI_API_KEY,
-        baseUrl: import.meta.env.VITE_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1',
+        baseUrl: import.meta.env.VITE_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta',
       };
       
       if (!geminiConfig.apiKey) {

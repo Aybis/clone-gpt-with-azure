@@ -9,13 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Please check your .env file or copy .env.example to .env and configure it.');
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const supabase = null; // Disable Supabase for now to prevent fetch errors
 
 // Helper function to check if Supabase is available
 const isSupabaseAvailable = (): boolean => {
-  return supabase !== null;
+  return false; // Force use of mock service to avoid database errors
 };
 
 // Helper function to throw consistent error when Supabase is not available
