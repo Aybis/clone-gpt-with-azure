@@ -24,8 +24,8 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
   
   const modelsByProvider = configuredProviders.reduce((acc, provider) => {
     const models = getAvailableModels(provider);
-    if (!acc[model.provider]) {
-      acc[model.provider] = [];
+    if (!acc[provider]) {
+      acc[provider] = [];
     }
     acc[provider] = models;
     return acc;
