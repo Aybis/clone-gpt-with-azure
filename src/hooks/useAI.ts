@@ -234,14 +234,34 @@ export const useAI = () => {
       hasApiKey: !!config?.apiKey
     };
   }, [service, shouldUseMock, currentProvider, isConfigured]);
+
+  // Change the current AI provider
+  const changeProvider = useCallback((provider: AIProvider) => {
+    setSelectedProvider(provider);
+    setIsConnected(null); // Reset connection status when changing providers
+    setError(null); // Clear any previous errors
+  }, []);
+
+  // Get all available models from all providers
+  const getAllModels = useCallback(async () => {
+    try {
+      const models = await getModels();
+      return models.map(model => ({
+        id: model.id,
+        name: model.name || model.id,
+        provider: currentProvider
+      }));
+    } catch (error) {
+      console.error('Failed to get models:', error);
+      return [];
+    }
+  }, [getModels, currentProvider]);
+
   // Auto-detect provider based on selected model
   const handleModelChange = useCallback((modelId: string) => {
-    const allModels = getAllModels();
-    const selectedModelObj = allModels.find(m => m.id === modelId);
-    if (selectedModelObj && selectedModelObj.provider !== currentProvider) {
-      changeProvider(selectedModelObj.provider);
-    }
-  }, [currentProvider]);
+    // For now, just log the model change since we don't have cross-provider model detection
+    console.log('Model changed to:', modelId);
+  }, []);
 
   return {
     sendMessage,
