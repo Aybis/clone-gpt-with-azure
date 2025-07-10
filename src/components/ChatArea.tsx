@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
+import StreamingText from './StreamingText';
 
 interface Message {
   id: string;
@@ -96,28 +97,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages, isLoading, chatId, stream
         ))}
         
         {(isLoading || streamingMessage) && (
-          <div className="flex gap-3 md:gap-6 p-4 md:p-8 border-b border-zinc-700 md:border-zinc-300">
-            <div className="flex-shrink-0">
+          <div className="group flex gap-3 md:gap-6 p-4 md:p-8 bg-white md:bg-white border-b border-zinc-700 md:border-zinc-300 hover:bg-zinc-700/50 md:hover:bg-zinc-50 transition-colors">
+            <div className="flex-shrink-0 flex flex-col items-center">
               <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-                <div className="w-4 h-4 text-white font-bold text-xs">G</div>
+                <div className="w-4 h-4 text-white font-bold text-xs flex items-center justify-center">G</div>
               </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 max-w-3xl">
               <div className="flex items-center gap-2 mb-2 md:mb-3">
                 <span className="font-semibold text-white md:text-zinc-900">ChatGPT</span>
               </div>
               {streamingMessage ? (
-                <ChatMessage
-                  message={{
-                    id: 'streaming',
-                    type: 'assistant',
-                    content: streamingMessage,
-                    timestamp: new Date()
-                  }}
-                  onCopy={handleCopy}
-                  isStreaming={true}
-                  streamingContent={streamingMessage}
-                />
+                <div className="prose prose-gray max-w-none">
+                  <div className="text-zinc-200 md:text-zinc-800 leading-relaxed text-sm md:text-base">
+                    <StreamingText content={streamingMessage} />
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-zinc-500 md:bg-zinc-400 rounded-full animate-bounce"></div>
