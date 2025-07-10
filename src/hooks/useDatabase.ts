@@ -52,7 +52,11 @@ export const useDatabase = () => {
       }
     });
 
-    return () => authSubscription.unsubscribe();
+    return () => {
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
   }, []);
 
   // Load chats from database
