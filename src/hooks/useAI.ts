@@ -1,36 +1,71 @@
-import { useState, useCallback } from 'react';
-import AzureOpenAIService from '../services/azureOpenAI';
-import { azureConfig, defaultModelConfig, isAzureConfigured, isDevelopment } from '../config/azure-config';
-import { ChatCompletionMessage, StreamChunk } from '../types/azure-openai';
+import { useState, useCallback, useMemo } from 'react';
+import { createAIService, BaseAIService } from '../services/ai-service';
+import { getAIConfig, getCurrentProvider, isProviderConfigured, getProviderInfo } from '../config/ai-providers';
+import { ChatMessage, StreamChunk, AIProvider } from '../types/ai-providers';
 import { mockAzureAPI } from '../utils/mockAzureAPI';
 
-export const useAzureOpenAI = () => {
+export const useAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>(getCurrentProvider());
   
-  // Use mock service in development if Azure is not configured
-  const shouldUseMock = isDevelopment && !isAzureConfigured;
-  const service = shouldUseMock ? null : new AzureOpenAIService(azureConfig, defaultModelConfig);
+  const currentProvider = selectedProvider;
+  const isConfigured = useMemo(() => {
+    // Check if the selected provider is configured
+    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
+    // Temporarily override the provider to check configuration
+    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
+    const configured = isProviderConfigured();
+    // Restore original provider
+    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
+    return configured;
+  }, [currentProvider]);
+  
+  const shouldUseMock = !isConfigured;
+  
+  const service = useMemo((): BaseAIService | null => {
+    if (shouldUseMock) return null;
+    
+    // Get config for the selected provider
+    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
+    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
+    const config = getAIConfig();
+    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
+    
+    if (!config) return null;
+    
+    try {
+      return createAIService(config);
+    } catch (error) {
+      console.error('Failed to create AI service:', error);
+      return null;
+    }
+  }, [shouldUseMock, currentProvider]);
 
-  // Test connection to Azure OpenAI
+  // Test connection to AI service
   const testConnection = useCallback(async (): Promise<boolean> => {
+    // Always allow testing, even in mock mode
     if (shouldUseMock) {
       setIsConnected(true);
+      setError(null);
       return true;
     }
 
     if (!service) {
       setIsConnected(false);
-      setError('Azure OpenAI service not configured');
+      setError('AI service not configured');
       return false;
     }
 
     try {
+      setError(null); // Clear any previous errors
       const connected = await service.healthCheck();
       setIsConnected(connected);
       if (!connected) {
-        setError('Failed to connect to Azure OpenAI');
+        setError('Failed to connect to AI service');
+      } else {
+        setError(null); // Clear error on successful connection
       }
       return connected;
     } catch (err) {
@@ -40,16 +75,18 @@ export const useAzureOpenAI = () => {
       return false;
     }
   }, [service, shouldUseMock]);
+
   const sendMessage = useCallback(async (
-    messages: ChatCompletionMessage[] | string,
-    conversationHistory?: ChatCompletionMessage[],
+    messages: ChatMessage[] | string,
+    model: string,
+    conversationHistory?: ChatMessage[],
     onStreamChunk?: (content: string) => void
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);
 
     // Convert string input to proper message format with context
-    let chatMessages: ChatCompletionMessage[];
+    let chatMessages: ChatMessage[];
     
     if (typeof messages === 'string') {
       // Build conversation context
@@ -69,7 +106,7 @@ export const useAzureOpenAI = () => {
     }
 
     try {
-      // Use mock service if in development and not configured
+      // Use mock service if not configured
       if (shouldUseMock) {
         if (onStreamChunk) {
           return new Promise((resolve, reject) => {
@@ -100,7 +137,7 @@ export const useAzureOpenAI = () => {
       }
 
       if (!service) {
-        throw new Error('Azure OpenAI service not available');
+        throw new Error('AI service not available');
       }
 
       if (onStreamChunk) {
@@ -108,9 +145,12 @@ export const useAzureOpenAI = () => {
         let fullResponse = '';
         
         return new Promise((resolve, reject) => {
-          service.createChatCompletionStream(
+          service.sendMessageStream(
             {
               messages: chatMessages,
+              model,
+              maxTokens: 1000,
+              temperature: 0.7,
               stream: true
             },
             (chunk: StreamChunk) => {
@@ -133,8 +173,11 @@ export const useAzureOpenAI = () => {
         });
       } else {
         // Non-streaming response
-        const response = await service.createChatCompletion({
-          messages: chatMessages
+        const response = await service.sendMessage({
+          messages: chatMessages,
+          model,
+          maxTokens: 1000,
+          temperature: 0.7
         });
 
         setIsLoading(false);
@@ -155,12 +198,12 @@ export const useAzureOpenAI = () => {
     }
 
     if (!service) {
-      throw new Error('Azure OpenAI service not available');
+      throw new Error('AI service not available');
     }
 
     try {
       const response = await service.getModels();
-      return response.data;
+      return response.data || response.models || [];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch models';
       setError(errorMessage);
@@ -169,9 +212,13 @@ export const useAzureOpenAI = () => {
   }, [service, shouldUseMock]);
 
   const getServiceInfo = useCallback(() => {
+    const providerInfo = getProviderInfo(currentProvider);
+    
     if (shouldUseMock) {
       return {
         mode: 'mock',
+        provider: currentProvider,
+        providerName: providerInfo.name,
         configured: false,
         endpoint: 'Mock Service',
         deploymentName: 'mock-gpt-4'
@@ -181,17 +228,24 @@ export const useAzureOpenAI = () => {
     if (!service) {
       return {
         mode: 'error',
+        provider: currentProvider,
+        providerName: providerInfo.name,
         configured: false,
         error: 'Service not available'
       };
     }
 
+    const config = getAIConfig();
     return {
-      mode: 'azure',
-      configured: isAzureConfigured,
-      ...service.getConfigInfo()
+      mode: currentProvider,
+      provider: currentProvider,
+      providerName: providerInfo.name,
+      configured: isConfigured,
+      endpoint: config?.baseUrl || (config as any)?.endpoint,
+      deploymentName: (config as any)?.deploymentName,
+      hasApiKey: !!config?.apiKey
     };
-  }, [service, shouldUseMock]);
+  }, [service, shouldUseMock, currentProvider, isConfigured]);
 
   return {
     sendMessage,
@@ -201,8 +255,15 @@ export const useAzureOpenAI = () => {
     isLoading,
     error,
     isConnected,
-    isConfigured: isAzureConfigured,
+    isConfigured,
     isMockMode: shouldUseMock,
-    clearError: () => setError(null)
+    currentProvider,
+    providerInfo: getProviderInfo(currentProvider),
+    clearError: () => setError(null),
+    changeProvider: (provider: AIProvider) => {
+      setSelectedProvider(provider);
+      setIsConnected(null);
+      setError(null);
+    }
   };
 };

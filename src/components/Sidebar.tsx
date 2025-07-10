@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ProviderStatus from './ProviderStatus';
+import UpgradeModal from './UpgradeModal';
 import { 
   MessageSquare, 
   Search, 
@@ -9,7 +11,10 @@ import {
   X,
   User,
   Settings,
+  Crown,
+  Check
 } from 'lucide-react';
+import { UserSubscription } from '../services/database';
 
 interface Chat {
   id: string;
@@ -25,6 +30,10 @@ interface SidebarProps {
   onNewChat: () => void;
   onDeleteChat: (chatId: string) => void;
   onRenameChat: (chatId: string, newTitle: string) => void;
+  onSignOut: () => void;
+  user: any;
+  subscription: UserSubscription | null;
+  onUpgrade: () => Promise<void>;
   isOpen: boolean;
   onClose: () => void;
   isCollapsed: boolean;
@@ -38,6 +47,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   onDeleteChat,
   onRenameChat,
+  onSignOut,
+  user,
+  subscription,
+  onUpgrade,
   isOpen,
   onClose,
   isCollapsed,
@@ -46,6 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [editingChat, setEditingChat] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   const filteredChats = chats.filter(chat =>
     chat.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -69,6 +84,27 @@ const Sidebar: React.FC<SidebarProps> = ({
     setEditTitle('');
   };
 
+  const handleNewChatClick = () => {
+    if (subscription?.plan === 'free' && subscription.current_count >= subscription.chat_limit) {
+      setShowUpgradeModal(true);
+    } else {
+      onNewChat();
+      if (isOpen) onClose();
+    }
+  };
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      await onUpgrade();
+      setShowUpgradeModal(false);
+    } catch (error) {
+      console.error('Upgrade failed:', error);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   const formatDate = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -85,15 +121,48 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-zinc-300">
         <button
-          onClick={() => {
-            onNewChat();
-            onClose();
-          }}
-          className="w-full flex items-center gap-3 p-3 rounded-lg border border-zinc-400 hover:bg-zinc-200 transition-colors text-zinc-700"
+          onClick={handleNewChatClick}
+          className="w-full flex items-center gap-3 p-3 rounded-lg border border-zinc-400 hover:bg-zinc-200 transition-all transform hover:scale-105 active:scale-95 text-zinc-700"
         >
           <Plus size={18} />
           <span className="font-medium">New chat</span>
         </button>
+        
+        {/* Subscription Status */}
+        {subscription && (
+          <div className="mt-3 p-3 rounded-lg bg-zinc-50 border border-zinc-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {subscription.plan === 'plus' ? (
+                  <Crown size={16} className="text-yellow-500" />
+                ) : (
+                  <div className="w-4 h-4 bg-zinc-400 rounded-full"></div>
+                )}
+                <span className="text-sm font-medium text-zinc-700">
+                  {subscription.plan === 'plus' ? 'Plus' : 'Free'}
+                </span>
+              </div>
+              {subscription.plan === 'free' && (
+                <span className="text-xs text-zinc-500">
+                  {subscription.current_count}/{subscription.chat_limit}
+                </span>
+              )}
+            </div>
+            {subscription.plan === 'free' && subscription.current_count >= subscription.chat_limit && (
+              <button
+                onClick={() => setShowUpgradeModal(true)}
+                className="w-full mt-2 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 active:scale-95"
+              >
+                Upgrade to Plus
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Provider Status */}
+      <div className="p-4 border-b border-zinc-300">
+        <ProviderStatus />
       </div>
 
       {/* Search */}
@@ -152,7 +221,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       handleRename(chat.id, chat.title);
                     }}
-                    className="p-1 hover:bg-zinc-300 rounded text-zinc-500 hover:text-zinc-700"
+                    className="p-1 hover:bg-zinc-300 rounded text-zinc-500 hover:text-zinc-700 transition-all transform hover:scale-110 active:scale-95"
                   >
                     <Edit3 size={14} />
                   </button>
@@ -161,7 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       onDeleteChat(chat.id);
                     }}
-                    className="p-1 hover:bg-zinc-300 rounded text-zinc-500 hover:text-red-600"
+                    className="p-1 hover:bg-zinc-300 rounded text-zinc-500 hover:text-red-600 transition-all transform hover:scale-110 active:scale-95"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -179,10 +248,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             <User size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-zinc-900">Ama</div>
-            <div className="text-xs text-zinc-500">Free plan</div>
+            <div className="text-sm font-medium text-zinc-900">
+              {user?.email || 'User'}
+            </div>
+            <div className="text-xs text-zinc-500">Authenticated</div>
           </div>
-          <button className="p-1 hover:bg-zinc-200 rounded text-zinc-500">
+          <button 
+            onClick={onSignOut}
+            className="p-1 hover:bg-zinc-200 rounded text-zinc-500"
+            title="Sign Out"
+          >
             <Settings size={16} />
           </button>
         </div>
@@ -198,18 +273,54 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span className="text-white font-medium">ChatGPT</span>
           <button
             onClick={onToggleCollapse}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
+            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-all transform hover:scale-105 active:scale-95"
           >
             <X size={16} />
           </button>
         </div>
         <button
-          onClick={onNewChat}
-          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-700 transition-colors text-white"
+          onClick={handleNewChatClick}
+          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-700 transition-all transform hover:scale-105 active:scale-95 text-white"
         >
           <Edit3 size={18} />
           <span className="font-medium">New chat</span>
         </button>
+        
+        {/* Subscription Status */}
+        {subscription && (
+          <div className="mt-3 p-3 rounded-lg bg-zinc-700 border border-zinc-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {subscription.plan === 'plus' ? (
+                  <Crown size={16} className="text-yellow-400" />
+                ) : (
+                  <div className="w-4 h-4 bg-zinc-500 rounded-full"></div>
+                )}
+                <span className="text-sm font-medium text-white">
+                  {subscription.plan === 'plus' ? 'Plus' : 'Free'}
+                </span>
+              </div>
+              {subscription.plan === 'free' && (
+                <span className="text-xs text-zinc-400">
+                  {subscription.current_count}/{subscription.chat_limit}
+                </span>
+              )}
+            </div>
+            {subscription.plan === 'free' && subscription.current_count >= subscription.chat_limit && (
+              <button
+                onClick={() => setShowUpgradeModal(true)}
+                className="w-full mt-2 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 active:scale-95"
+              >
+                Upgrade to Plus
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Provider Status */}
+      <div className="p-3 border-b border-zinc-700">
+        <ProviderStatus />
       </div>
 
       {/* Search */}
@@ -265,7 +376,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       handleRename(chat.id, chat.title);
                     }}
-                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 hover:text-white"
+                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 hover:text-white transition-all transform hover:scale-110 active:scale-95"
                   >
                     <Edit3 size={14} />
                   </button>
@@ -274,7 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       onDeleteChat(chat.id);
                     }}
-                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 hover:text-red-400"
+                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 hover:text-red-400 transition-all transform hover:scale-110 active:scale-95"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -292,14 +403,30 @@ const Sidebar: React.FC<SidebarProps> = ({
             <User size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <div className="text-base font-medium text-white">Ama</div>
-            <div className="text-xs text-zinc-400">Free plan</div>
+            <div className="text-base font-medium text-white">
+              {user?.email || 'User'}
+            </div>
+            <div className="text-xs text-zinc-400">Authenticated</div>
           </div>
-          <button className="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors">
+          <button 
+            onClick={onSignOut}
+            className="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-all transform hover:scale-105 active:scale-95"
+            title="Sign Out"
+          >
             <Settings size={18} />
           </button>
         </div>
       </div>
+      
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={handleUpgrade}
+        isLoading={isUpgrading}
+        currentCount={subscription?.current_count || 0}
+        limit={subscription?.chat_limit || 5}
+      />
     </>
   );
 
