@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { createAIService, BaseAIService } from '../services/ai-service';
-import { getAIConfig, getCurrentProvider, isProviderConfigured, getProviderInfo } from '../config/ai-providers';
+import { getAIConfig, getCurrentProvider, getProviderInfo, isSpecificProviderConfigured, getSpecificProviderConfig } from '../config/ai-providers';
 import { ChatMessage, StreamChunk, AIProvider } from '../types/ai-providers';
 import { mockAzureAPI } from '../utils/mockAzureAPI';
 
@@ -12,14 +12,7 @@ export const useAI = () => {
   
   const currentProvider = selectedProvider;
   const isConfigured = useMemo(() => {
-    // Check if the selected provider is configured
-    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
-    // Temporarily override the provider to check configuration
-    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
-    const configured = isProviderConfigured();
-    // Restore original provider
-    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
-    return configured;
+    return isSpecificProviderConfigured(currentProvider);
   }, [currentProvider]);
   
   const shouldUseMock = !isConfigured;
@@ -27,12 +20,7 @@ export const useAI = () => {
   const service = useMemo((): BaseAIService | null => {
     if (shouldUseMock) return null;
     
-    // Get config for the selected provider
-    const originalProvider = import.meta.env.VITE_AI_PROVIDER;
-    (import.meta.env as any).VITE_AI_PROVIDER = currentProvider;
-    const config = getAIConfig();
-    (import.meta.env as any).VITE_AI_PROVIDER = originalProvider;
-    
+    const config = getSpecificProviderConfig(currentProvider);
     if (!config) return null;
     
     try {
@@ -235,7 +223,7 @@ export const useAI = () => {
       };
     }
 
-    const config = getAIConfig();
+    const config = getSpecificProviderConfig(currentProvider);
     return {
       mode: currentProvider,
       provider: currentProvider,

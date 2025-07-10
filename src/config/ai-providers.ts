@@ -188,6 +188,73 @@ export const isProviderConfigured = (): boolean => {
   return getAIConfig() !== null;
 };
 
+// Check if a specific provider is configured
+export const isSpecificProviderConfigured = (provider: AIProvider): boolean => {
+  switch (provider) {
+    case 'azure':
+      return !!(
+        import.meta.env.VITE_AZURE_OPENAI_ENDPOINT &&
+        import.meta.env.VITE_AZURE_OPENAI_API_KEY &&
+        import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_NAME
+      );
+    case 'openai':
+      return !!import.meta.env.VITE_OPENAI_API_KEY;
+    case 'gemini':
+      return !!import.meta.env.VITE_GEMINI_API_KEY;
+    default:
+      return false;
+  }
+};
+
+// Get configuration for a specific provider
+export const getSpecificProviderConfig = (provider: AIProvider): AIConfig | null => {
+  switch (provider) {
+    case 'azure':
+      const azureConfig = {
+        provider: 'azure' as const,
+        endpoint: import.meta.env.VITE_AZURE_OPENAI_ENDPOINT,
+        apiKey: import.meta.env.VITE_AZURE_OPENAI_API_KEY,
+        deploymentName: import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_NAME,
+        apiVersion: import.meta.env.VITE_AZURE_OPENAI_API_VERSION || '2024-02-15-preview',
+      };
+      
+      if (!azureConfig.endpoint || !azureConfig.apiKey || !azureConfig.deploymentName) {
+        return null;
+      }
+      
+      return azureConfig;
+
+    case 'openai':
+      const openaiConfig = {
+        provider: 'openai' as const,
+        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        baseUrl: import.meta.env.VITE_OPENAI_BASE_URL || 'https://api.openai.com/v1',
+      };
+      
+      if (!openaiConfig.apiKey) {
+        return null;
+      }
+      
+      return openaiConfig;
+
+    case 'gemini':
+      const geminiConfig = {
+        provider: 'gemini' as const,
+        apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+        baseUrl: import.meta.env.VITE_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1',
+      };
+      
+      if (!geminiConfig.apiKey) {
+        return null;
+      }
+      
+      return geminiConfig;
+
+    default:
+      return null;
+  }
+};
+
 // Get provider display information
 export const getProviderInfo = (provider: AIProvider) => {
   switch (provider) {
