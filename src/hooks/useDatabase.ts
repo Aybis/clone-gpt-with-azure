@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChatService, DatabaseChat, DatabaseMessage, AuthService, SubscriptionService, UserSubscription } from '../services/database';
+import { ChatServices, DatabaseChat, DatabaseMessage, AuthService, SubscriptionService, UserSubscription } from '../services/database';
 
 // Convert database types to app types
 const convertDatabaseChatToAppChat = (dbChat: DatabaseChat, messages: DatabaseMessage[] = []) => ({
@@ -67,7 +67,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChats = await ChatService.getChats();
+      const dbChats = await ChatServices.getChats();
       return dbChats.map(chat => convertDatabaseChatToAppChat(chat));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load chats';
@@ -86,7 +86,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const chatWithMessages = await ChatService.getChatWithMessages(chatId);
+      const chatWithMessages = await ChatServices.getChatWithMessages(chatId);
       if (!chatWithMessages) return null;
 
       return convertDatabaseChatToAppChat(chatWithMessages, chatWithMessages.messages);
@@ -107,7 +107,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChat = await ChatService.createChat(title, preview);
+      const dbChat = await ChatServices.createChat(title, preview);
       
       // Refresh subscription info after creating chat
       const updatedSub = await SubscriptionService.getUserSubscription();
@@ -131,7 +131,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChat = await ChatService.updateChat(chatId, updates);
+      const dbChat = await ChatServices.updateChat(chatId, updates);
       return convertDatabaseChatToAppChat(dbChat);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update chat';
@@ -150,7 +150,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      await ChatService.deleteChat(chatId);
+      await ChatServices.deleteChat(chatId);
       
       // Refresh subscription info after deleting chat
       const updatedSub = await SubscriptionService.getUserSubscription();
@@ -172,7 +172,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbMessage = await ChatService.addMessage(chatId, role, content);
+      const dbMessage = await ChatServices.addMessage(chatId, role, content);
       return {
         id: dbMessage.id,
         type: dbMessage.role as 'user' | 'assistant',
@@ -196,7 +196,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChats = await ChatService.searchChats(query);
+      const dbChats = await ChatServices.searchChats(query);
       return dbChats.map(chat => convertDatabaseChatToAppChat(chat));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to search chats';
