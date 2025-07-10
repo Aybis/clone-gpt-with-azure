@@ -3,14 +3,24 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Log configuration status for debugging
+console.log('Supabase Configuration:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing'
+});
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Database features will be disabled.');
+  console.warn('Missing Supabase environment variables. Using mock database service.');
   console.warn('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
-  console.warn('Please check your .env file or copy .env.example to .env and configure it.');
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false // Disable auth persistence for now
+      }
+    })
   : null;
 
 // Helper function to check if Supabase is available

@@ -73,6 +73,14 @@ export const useAI = () => {
     setIsLoading(true);
     setError(null);
 
+    // Validate model parameter
+    if (!model) {
+      setIsLoading(false);
+      const errorMessage = 'No model specified';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+
     // Convert string input to proper message format with context
     let chatMessages: ChatMessage[];
     
