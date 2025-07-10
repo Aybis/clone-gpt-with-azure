@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChatServices, DatabaseChat, DatabaseMessage, AuthService, SubscriptionService, UserSubscription } from '../services/database';
+import { chatService, DatabaseChat, DatabaseMessage, authService, subscriptionService, UserSubscription } from '../services/database';
 
 // Convert database types to app types
 const convertDatabaseChatToAppChat = (dbChat: DatabaseChat, messages: DatabaseMessage[] = []) => ({
@@ -24,11 +24,11 @@ export const useDatabase = () => {
   // Initialize auth state
   useEffect(() => {
     // Get initial user
-    AuthService.getCurrentUser().then(async (user) => {
+    authService.getCurrentUser().then(async (user) => {
       setUser(user);
       if (user) {
         try {
-          const sub = await SubscriptionService.getUserSubscription();
+          const sub = await subscriptionService.getUserSubscription();
           setSubscription(sub);
         } catch (err) {
           console.error('Failed to load subscription:', err);
@@ -43,11 +43,11 @@ export const useDatabase = () => {
 
     // Listen for auth changes
     try {
-      const { data: { subscription: authSubscription } } = AuthService.onAuthStateChange(async (user) => {
+      const { data: { subscription: authSubscription } } = authService.onAuthStateChange(async (user) => {
         setUser(user);
         if (user) {
           try {
-            const sub = await SubscriptionService.getUserSubscription();
+            const sub = await subscriptionService.getUserSubscription();
             setSubscription(sub);
           } catch (err) {
             console.error('Failed to load subscription:', err);
@@ -77,7 +77,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChats = await ChatServices.getChats();
+      const dbChats = await chatService.getChats();
       return dbChats.map(chat => convertDatabaseChatToAppChat(chat));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load chats';
@@ -94,7 +94,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const chatWithMessages = await ChatServices.getChatWithMessages(chatId);
+      const chatWithMessages = await chatService.getChatWithMessages(chatId);
       if (!chatWithMessages) return null;
 
       return convertDatabaseChatToAppChat(chatWithMessages, chatWithMessages.messages);
@@ -113,10 +113,10 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChat = await ChatServices.createChat(title, preview);
+      const dbChat = await chatService.createChat(title, preview);
       
       // Refresh subscription info after creating chat
-      const updatedSub = await SubscriptionService.getUserSubscription();
+      const updatedSub = await subscriptionService.getUserSubscription();
       setSubscription(updatedSub);
       
       return convertDatabaseChatToAppChat(dbChat);
@@ -135,7 +135,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChat = await ChatServices.updateChat(chatId, updates);
+      const dbChat = await chatService.updateChat(chatId, updates);
       return convertDatabaseChatToAppChat(dbChat);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update chat';
@@ -152,10 +152,10 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      await ChatServices.deleteChat(chatId);
+      await chatService.deleteChat(chatId);
       
       // Refresh subscription info after deleting chat
-      const updatedSub = await SubscriptionService.getUserSubscription();
+      const updatedSub = await subscriptionService.getUserSubscription();
       setSubscription(updatedSub);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete chat';
@@ -172,7 +172,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbMessage = await ChatServices.addMessage(chatId, role, content);
+      const dbMessage = await chatService.addMessage(chatId, role, content);
       return {
         id: dbMessage.id,
         type: dbMessage.role as 'user' | 'assistant',
@@ -194,7 +194,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const dbChats = await ChatServices.searchChats(query);
+      const dbChats = await chatService.searchChats(query);
       return dbChats.map(chat => convertDatabaseChatToAppChat(chat));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to search chats';
@@ -211,7 +211,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const result = await AuthService.signIn(email, password);
+      const result = await authService.signIn(email, password);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';
@@ -227,7 +227,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      const result = await AuthService.signUp(email, password);
+      const result = await authService.signUp(email, password);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
@@ -243,7 +243,7 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      await AuthService.signOut();
+      await authService.signOut();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign out';
       setError(errorMessage);
@@ -259,8 +259,8 @@ export const useDatabase = () => {
     setError(null);
 
     try {
-      await SubscriptionService.upgradeToPlusSubscription();
-      const updatedSub = await SubscriptionService.getUserSubscription();
+      await subscriptionService.upgradeToPlusSubscription();
+      const updatedSub = await subscriptionService.getUserSubscription();
       setSubscription(updatedSub);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to upgrade subscription';
