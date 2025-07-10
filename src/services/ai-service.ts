@@ -98,6 +98,13 @@ export class AzureAIService extends BaseAIService {
     onError: (error: Error) => void
   ): Promise<void> {
     const config = this.config as any;
+    
+    // Validate configuration before making request
+    if (!config.endpoint || !config.apiKey || !config.deploymentName) {
+      onError(new Error('Azure OpenAI configuration is incomplete. Please check your environment variables.'));
+      return;
+    }
+    
     const url = `${this.getBaseUrl()}/chat/completions?api-version=${config.apiVersion}`;
     
     try {
@@ -113,7 +120,8 @@ export class AzureAIService extends BaseAIService {
       });
 
       if (!response.ok) {
-        throw new Error(`Stream failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Azure OpenAI stream failed: ${response.status} ${response.statusText}. ${errorText}`);
       }
 
       const reader = response.body?.getReader();
@@ -204,6 +212,19 @@ export class OpenAIService extends BaseAIService {
     onError: (error: Error) => void
   ): Promise<void> {
     const config = this.config as any;
+    
+    // Validate configuration before making request
+    if (!config.apiKey) {
+      onError(new Error('OpenAI API key is missing. Please check your environment variables.'));
+      return;
+    }
+    
+    // Validate model
+    if (!request.model) {
+      onError(new Error('Model is required for OpenAI requests.'));
+      return;
+    }
+    
     const url = `${config.baseUrl}/chat/completions`;
     
     try {
@@ -220,7 +241,8 @@ export class OpenAIService extends BaseAIService {
       });
 
       if (!response.ok) {
-        throw new Error(`Stream failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`OpenAI stream failed: ${response.status} ${response.statusText}. ${errorText}`);
       }
 
       const reader = response.body?.getReader();
@@ -359,16 +381,24 @@ export class GeminiService extends BaseAIService {
     onError: (error: Error) => void
   ): Promise<void> {
     const config = this.config as any;
+    
+    // Validate configuration before making request
+    if (!config.apiKey) {
+      onError(new Error('Gemini API key is missing. Please check your environment variables.'));
+      return;
+    }
+    
+    // Validate model name for Gemini
+    if (!request.model || !request.model.startsWith('gemini-')) {
+      onError(new Error(`Invalid Gemini model: ${request.model}. Model must start with 'gemini-'.`));
+      return;
+    }
+    
     const url = `${config.baseUrl}/models/${request.model}:streamGenerateContent?key=${config.apiKey}`;
     
     const geminiRequest = this.convertMessagesToGemini(request.messages);
     
     try {
-      // Validate model name for Gemini
-      if (!request.model || !request.model.startsWith('gemini-')) {
-        throw new Error(`Invalid Gemini model: ${request.model}`);
-      }
-      
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -384,7 +414,7 @@ export class GeminiService extends BaseAIService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Gemini API Error:', errorText);
-        throw new Error(`Gemini API failed: ${response.status} ${response.statusText}. ${errorText}`);
+        throw new Error(`Gemini stream failed: ${response.status} ${response.statusText}. ${errorText}`);
       }
 
       const reader = response.body?.getReader();

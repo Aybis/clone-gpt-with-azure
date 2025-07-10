@@ -8,7 +8,23 @@ export const getAllProviders = (): AIProvider[] => {
 // Get current AI provider from environment
 export const getCurrentProvider = (): AIProvider => {
   const provider = import.meta.env.VITE_AI_PROVIDER as AIProvider;
-  return provider || 'azure';
+  
+  // If no provider is set, try to detect based on available configuration
+  if (!provider) {
+    if (import.meta.env.VITE_AZURE_OPENAI_ENDPOINT && import.meta.env.VITE_AZURE_OPENAI_API_KEY) {
+      return 'azure';
+    }
+    if (import.meta.env.VITE_OPENAI_API_KEY) {
+      return 'openai';
+    }
+    if (import.meta.env.VITE_GEMINI_API_KEY) {
+      return 'gemini';
+    }
+    // Default fallback
+    return 'azure';
+  }
+  
+  return provider;
 };
 
 // Validate and get AI configuration
