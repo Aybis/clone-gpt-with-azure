@@ -79,7 +79,7 @@ function App() {
 
   // Show auth modal if not authenticated and trying to use the app
   useEffect(() => {
-    if (!isAuthenticated && !showAuthModal && chats.length === 0) {
+    if (!isAuthenticated && !showAuthModal && chats.length === 0 && user === null) {
       setShowAuthModal(true);
     }
   }, [isAuthenticated, showAuthModal]);
@@ -96,7 +96,7 @@ function App() {
   };
 
   const handleNewChat = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && user === null) {
       setShowAuthModal(true);
       return;
     }
@@ -121,7 +121,7 @@ function App() {
   };
 
   const handleChatSelect = async (chatId: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && user === null) {
       setShowAuthModal(true);
       return;
     }
@@ -180,7 +180,7 @@ function App() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && user === null) {
       setShowAuthModal(true);
       return;
     }

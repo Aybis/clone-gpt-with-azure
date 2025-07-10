@@ -9,11 +9,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Please check your .env file or copy .env.example to .env and configure it.');
 }
 
-export const supabase = null; // Disable Supabase for now to prevent fetch errors
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // Helper function to check if Supabase is available
 const isSupabaseAvailable = (): boolean => {
-  return false; // Force use of mock service to avoid database errors
+  return supabase !== null;
 };
 
 // Helper function to throw consistent error when Supabase is not available
@@ -646,7 +648,8 @@ export class AuthService {
   // Sign up with email and password
   static async signUp(email: string, password: string) {
     if (!supabase) {
-      throwSupabaseError();
+      // Return mock success for demo purposes
+      return { user: { email, id: 'mock-user' }, session: null };
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -664,7 +667,8 @@ export class AuthService {
   // Sign in with email and password
   static async signIn(email: string, password: string) {
     if (!supabase) {
-      throwSupabaseError();
+      // Return mock success for demo purposes
+      return { user: { email, id: 'mock-user' }, session: null };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -682,7 +686,8 @@ export class AuthService {
   // Sign out
   static async signOut() {
     if (!supabase) {
-      throwSupabaseError();
+      // Mock sign out
+      return;
     }
 
     const { error } = await supabase.auth.signOut();
@@ -695,7 +700,8 @@ export class AuthService {
   // Get current user
   static async getCurrentUser() {
     if (!supabase) {
-      return null;
+      // Return mock user for demo
+      return { email: 'mock@user.com', id: 'mock-user' };
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -705,7 +711,8 @@ export class AuthService {
   // Listen to auth state changes
   static onAuthStateChange(callback: (user: any) => void) {
     if (!supabase) {
-      callback(null);
+      // Call with mock user for demo
+      callback({ email: 'mock@user.com', id: 'mock-user' });
       return { data: { subscription: null } };
     }
 

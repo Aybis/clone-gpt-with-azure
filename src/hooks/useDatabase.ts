@@ -34,35 +34,45 @@ export const useDatabase = () => {
           console.error('Failed to load subscription:', err);
         }
       }
+    }).catch((err) => {
+      console.warn('Database not available, using mock mode:', err);
+      // Set a mock user when database is not available
+      setUser({ email: 'mock@user.com', id: 'mock-user' });
+      setSubscription({ plan: 'free', chat_limit: 999, current_count: 0 });
     });
 
     // Listen for auth changes
-    const { data: { subscription: authSubscription } } = AuthService.onAuthStateChange(async (user) => {
-      setUser(user);
-      if (user) {
-        try {
-          const sub = await SubscriptionService.getUserSubscription();
-          setSubscription(sub);
-        } catch (err) {
-          console.error('Failed to load subscription:', err);
+    try {
+      const { data: { subscription: authSubscription } } = AuthService.onAuthStateChange(async (user) => {
+        setUser(user);
+        if (user) {
+          try {
+            const sub = await SubscriptionService.getUserSubscription();
+            setSubscription(sub);
+          } catch (err) {
+            console.error('Failed to load subscription:', err);
+            setSubscription(null);
+          }
+        } else {
           setSubscription(null);
         }
-      } else {
-        setSubscription(null);
-      }
-    });
+      });
 
-    return () => {
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
-    };
+      return () => {
+        if (authSubscription) {
+          authSubscription.unsubscribe();
+        }
+      };
+    } catch (err) {
+      console.warn('Auth service not available, using mock mode');
+      // Set mock user when auth is not available
+      setUser({ email: 'mock@user.com', id: 'mock-user' });
+      setSubscription({ plan: 'free', chat_limit: 999, current_count: 0 });
+    }
   }, []);
 
   // Load chats from database
   const loadChats = useCallback(async () => {
-    if (!user) return [];
-
     setIsLoading(true);
     setError(null);
 
@@ -80,8 +90,6 @@ export const useDatabase = () => {
 
   // Load specific chat with messages
   const loadChatWithMessages = useCallback(async (chatId: string) => {
-    if (!user) return null;
-
     setIsLoading(true);
     setError(null);
 
@@ -101,8 +109,6 @@ export const useDatabase = () => {
 
   // Create new chat
   const createChat = useCallback(async (title: string, preview: string = '') => {
-    if (!user) throw new Error('User not authenticated');
-
     setIsLoading(true);
     setError(null);
 
@@ -125,8 +131,6 @@ export const useDatabase = () => {
 
   // Update chat
   const updateChat = useCallback(async (chatId: string, updates: { title?: string; preview?: string }) => {
-    if (!user) throw new Error('User not authenticated');
-
     setIsLoading(true);
     setError(null);
 
@@ -144,8 +148,6 @@ export const useDatabase = () => {
 
   // Delete chat
   const deleteChat = useCallback(async (chatId: string) => {
-    if (!user) throw new Error('User not authenticated');
-
     setIsLoading(true);
     setError(null);
 
@@ -166,8 +168,6 @@ export const useDatabase = () => {
 
   // Add message to chat
   const addMessage = useCallback(async (chatId: string, role: 'user' | 'assistant', content: string) => {
-    if (!user) throw new Error('User not authenticated');
-
     setIsLoading(true);
     setError(null);
 
@@ -190,8 +190,6 @@ export const useDatabase = () => {
 
   // Search chats
   const searchChats = useCallback(async (query: string) => {
-    if (!user) return [];
-
     setIsLoading(true);
     setError(null);
 
@@ -257,8 +255,6 @@ export const useDatabase = () => {
 
   // Upgrade to plus
   const upgradeToPlusSubscription = useCallback(async () => {
-    if (!user) throw new Error('User not authenticated');
-
     setIsLoading(true);
     setError(null);
 
