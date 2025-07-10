@@ -14,7 +14,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
   : null;
 
 // Helper function to check if Supabase is available
-export const isSupabaseAvailable = (): boolean => {
+const isSupabaseAvailable = (): boolean => {
   return supabase !== null;
 };
 
