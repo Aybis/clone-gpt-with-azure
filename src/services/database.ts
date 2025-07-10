@@ -295,7 +295,7 @@ export class MockChatService {
 export const DatabaseService = isSupabaseAvailable() ? ChatService : MockChatService;
 
 // Update other service methods to use the same error handling pattern
-export class ChatService {
+export class ChatServices {
   // Get all chats for the current user
   static async getChats(): Promise<DatabaseChat[]> {
     if (!supabase) {
