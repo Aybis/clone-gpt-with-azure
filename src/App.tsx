@@ -57,6 +57,8 @@ function App() {
   
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  const { handleModelChange } = useAI();
+
   // Initialize with default model for current provider
   useEffect(() => {
     const availableModels = getAvailableModels(currentProvider);
@@ -353,7 +355,10 @@ function App() {
             {/* Model Selector */}
             <ModelSelector 
               selectedModel={selectedModel} 
-              onModelSelect={setSelectedModel} 
+              onModelSelect={(modelId) => {
+                setSelectedModel(modelId);
+                handleModelChange(modelId);
+              }}
             />
             
             {/* Spacer for mobile to center the model selector */}
@@ -367,6 +372,7 @@ function App() {
             isLoading={isLoading}
             streamingMessage={streamingMessage}
             user={user}
+            onSendMessage={handleSendMessage}
           />
         </div>
         

@@ -1,32 +1,37 @@
 import React, { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
-import { getAvailableModels, getAllModels, getProviderInfo } from '../config/ai-providers';
+import { getAvailableModels, getAllModels, getProviderInfo, isSpecificProviderConfigured } from '../config/ai-providers';
 import { AIModel, AIProvider } from '../types/ai-providers';
 
 interface ModelSelectorProps {
   selectedModel: string;
   onModelSelect: (modelId: string) => void;
+  onProviderChange?: (provider: AIProvider) => void;
 }
 
-const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSelect }) => {
+const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSelect, onProviderChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentProvider, providerInfo } = useAI();
 
   // Get models grouped by provider
   const allModels = getAllModels();
-  const currentProviderModels = getAvailableModels(currentProvider);
   
   // Group models by provider for display
-  const modelsByProvider = allModels.reduce((acc, model) => {
+  const configuredProviders = ['azure', 'openai', 'gemini'].filter(provider => 
+    isSpecificProviderConfigured(provider as AIProvider)
+  ) as AIProvider[];
+  
+  const modelsByProvider = configuredProviders.reduce((acc, provider) => {
+    const models = getAvailableModels(provider);
     if (!acc[model.provider]) {
       acc[model.provider] = [];
     }
-    acc[model.provider].push(model);
+    acc[provider] = models;
     return acc;
   }, {} as Record<AIProvider, AIModel[]>);
 
-  const currentModel = allModels.find(m => m.id === selectedModel) || currentProviderModels[0];
+  const currentModel = allModels.find(m => m.id === selectedModel);
 
   const formatCost = (cost?: number) => {
     if (!cost) return 'Free tier';
@@ -64,60 +69,34 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
             <div className="p-1">
               <div className="px-3 py-2 text-xs text-zinc-500 font-medium flex items-center gap-2 border-b border-zinc-200">
                 <Info size={12} />
-                AI Models
+                Available AI Models
               </div>
               
-              {/* Current Provider Models */}
-              <div className="py-2">
-                <div className="px-3 py-1 text-xs font-medium text-zinc-400 uppercase tracking-wide">
-                  {providerInfo.name} (Current)
-                </div>
-                {currentProviderModels.map((model) => (
-                  <button
-                    key={model.id}
-                    onClick={() => {
-                      onModelSelect(model.id);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full flex items-start gap-3 p-3 hover:bg-zinc-50 transition-colors text-left ${
-                      selectedModel === model.id ? 'bg-zinc-50' : ''
-                    }`}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm text-zinc-900">{model.name}</span>
-                        <span className={`px-1.5 py-0.5 text-xs rounded-full ${getProviderColor(model.provider)}`}>
-                          {getProviderInfo(model.provider).icon}
-                        </span>
-                      </div>
-                      <div className="text-xs text-zinc-500 mb-1">{model.description}</div>
-                      <div className="text-xs text-zinc-400">
-                        {formatCost(model.costPer1kTokens)} • {model.maxTokens.toLocaleString()} tokens
-                      </div>
-                    </div>
-                    {selectedModel === model.id && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
-                    )}
-                  </button>
-                ))}
-              </div>
 
-              {/* Other Providers */}
+              {/* All Configured Providers */}
               {Object.entries(modelsByProvider).map(([provider, models]) => {
-                if (provider === currentProvider) return null;
-                
                 const info = getProviderInfo(provider as AIProvider);
+                const isCurrentProvider = provider === currentProvider;
+                
                 return (
                   <div key={provider} className="py-2 border-t border-zinc-100">
                     <div className="px-3 py-1 text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-1">
                       <span>{info.icon}</span>
-                      {info.name} (Configure to use)
+                      {info.name} {isCurrentProvider && '(Current)'}
                     </div>
                     {models.map((model) => (
                       <button
                         key={model.id}
-                        disabled
-                        className="w-full flex items-start gap-3 p-3 text-left opacity-50 cursor-not-allowed"
+                        onClick={() => {
+                          onModelSelect(model.id);
+                          if (onProviderChange && model.provider !== currentProvider) {
+                            onProviderChange(model.provider);
+                          }
+                          setIsOpen(false);
+                        }}
+                        className={`w-full flex items-start gap-3 p-3 hover:bg-zinc-50 transition-colors text-left ${
+                          selectedModel === model.id ? 'bg-zinc-50' : ''
+                        }`}
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -131,6 +110,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
                             {formatCost(model.costPer1kTokens)} • {model.maxTokens.toLocaleString()} tokens
                           </div>
                         </div>
+                        {selectedModel === model.id && (
+                          <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -140,8 +122,8 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
             
             <div className="border-t border-zinc-200 p-3 bg-zinc-50">
               <div className="text-xs text-zinc-600">
-                <p className="font-medium mb-1">Current Provider: {providerInfo.name}</p>
-                <p>Configure other providers in your .env file to access more models.</p>
+                <p className="font-medium mb-1">{configuredProviders.length} Provider{configuredProviders.length !== 1 ? 's' : ''} Available</p>
+                <p>Switch between providers by selecting their models above.</p>
               </div>
             </div>
           </div>

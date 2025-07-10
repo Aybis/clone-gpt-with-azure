@@ -234,6 +234,14 @@ export const useAI = () => {
       hasApiKey: !!config?.apiKey
     };
   }, [service, shouldUseMock, currentProvider, isConfigured]);
+  // Auto-detect provider based on selected model
+  const handleModelChange = useCallback((modelId: string) => {
+    const allModels = getAllModels();
+    const selectedModelObj = allModels.find(m => m.id === modelId);
+    if (selectedModelObj && selectedModelObj.provider !== currentProvider) {
+      changeProvider(selectedModelObj.provider);
+    }
+  }, [currentProvider]);
 
   return {
     sendMessage,
@@ -248,10 +256,7 @@ export const useAI = () => {
     currentProvider,
     providerInfo: getProviderInfo(currentProvider),
     clearError: () => setError(null),
-    changeProvider: (provider: AIProvider) => {
-      setSelectedProvider(provider);
-      setIsConnected(null);
-      setError(null);
-    }
+    changeProvider,
+    handleModelChange
   };
 };

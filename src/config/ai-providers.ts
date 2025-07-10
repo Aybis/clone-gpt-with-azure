@@ -183,6 +183,17 @@ export const getAllModels = (): AIModel[] => {
   ];
 };
 
+// Get all models from configured providers only
+export const getConfiguredModels = (): AIModel[] => {
+  const configuredProviders = ['azure', 'openai', 'gemini'].filter(provider => 
+    isSpecificProviderConfigured(provider as AIProvider)
+  ) as AIProvider[];
+  
+  return configuredProviders.reduce((models, provider) => {
+    return [...models, ...getAvailableModels(provider)];
+  }, [] as AIModel[]);
+};
+
 // Check if current provider is configured
 export const isProviderConfigured = (): boolean => {
   return getAIConfig() !== null;
