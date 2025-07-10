@@ -57,7 +57,7 @@ function App() {
   
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const { handleModelChange } = useAI();
+  const { sendMessage, currentProvider, handleModelChange } = useAI();
 
   // Initialize with default model for current provider
   useEffect(() => {
@@ -259,9 +259,9 @@ function App() {
     try {
       // Use streaming for better UX
       const response = await sendMessage(
-        content, 
+        conversationHistory.length > 0 ? conversationHistory.concat([{ role: 'user', content }]) : content,
         selectedModel, 
-        conversationHistory,
+        [],
         (chunk: string) => {
           setStreamingMessage(prev => prev + chunk);
         }

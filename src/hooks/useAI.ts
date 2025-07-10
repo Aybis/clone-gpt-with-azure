@@ -259,9 +259,17 @@ export const useAI = () => {
 
   // Auto-detect provider based on selected model
   const handleModelChange = useCallback((modelId: string) => {
-    // For now, just log the model change since we don't have cross-provider model detection
-    console.log('Model changed to:', modelId);
-  }, []);
+    // Find which provider this model belongs to
+    const allModels = getAllModels();
+    const selectedModel = allModels.find(m => m.id === modelId);
+    
+    if (selectedModel && selectedModel.provider !== currentProvider) {
+      console.log('Switching provider from', currentProvider, 'to', selectedModel.provider);
+      setSelectedProvider(selectedModel.provider);
+      setIsConnected(null); // Reset connection status
+      setError(null); // Clear any previous errors
+    }
+  }, [currentProvider]);
 
   return {
     sendMessage,

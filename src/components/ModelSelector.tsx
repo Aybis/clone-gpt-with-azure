@@ -89,9 +89,6 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModel, onModelSel
                         key={model.id}
                         onClick={() => {
                           onModelSelect(model.id);
-                          if (onProviderChange && model.provider !== currentProvider) {
-                            onProviderChange(model.provider);
-                          }
                           setIsOpen(false);
                         }}
                         className={`w-full flex items-start gap-3 p-3 hover:bg-zinc-50 transition-colors text-left ${
