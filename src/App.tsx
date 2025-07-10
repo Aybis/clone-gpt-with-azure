@@ -57,7 +57,7 @@ function App() {
   
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const { sendMessage, currentProvider, handleModelChange } = useAI();
+  const { handleModelChange } = useAI();
 
   // Initialize with default model for current provider
   useEffect(() => {
