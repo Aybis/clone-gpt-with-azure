@@ -417,16 +417,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
       </div>
-      
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        onUpgrade={handleUpgrade}
-        isLoading={isUpgrading}
-        currentCount={subscription?.current_count || 0}
-        limit={subscription?.chat_limit || 5}
-      />
     </>
   );
 
@@ -464,6 +454,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           <DesktopSidebarContent />
         </div>
       </div>
+      
+      {/* Upgrade Modal - Full Screen */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={handleUpgrade}
+        isLoading={isUpgrading}
+        currentCount={subscription?.current_count || 0}
+        limit={subscription?.chat_limit || 5}
+      />
     </>
   );
 };
